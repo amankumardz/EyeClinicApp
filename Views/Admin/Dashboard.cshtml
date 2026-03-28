@@ -2,44 +2,54 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h1 class="mb-4">Admin Dashboard</h1>
+<div class="dashboard-shell fade-in">
+    <aside class="dashboard-sidebar panel-card">
+        <h6 class="text-uppercase text-secondary small fw-semibold">Admin Navigation</h6>
+        <nav class="nav flex-column mt-2 gap-1">
+            <a asp-action="Dashboard" class="nav-link active"><i class="bi bi-grid me-2"></i>Dashboard</a>
+            <a asp-action="ManageAppointments" class="nav-link"><i class="bi bi-calendar3 me-2"></i>Appointments</a>
+            <a asp-action="ManageGlasses" class="nav-link"><i class="bi bi-eyeglasses me-2"></i>Glasses</a>
+        </nav>
+    </aside>
 
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Total Glasses</h5>
-                <p class="display-6 mb-0">@ViewBag.TotalGlasses</p>
+    <section>
+        <div class="page-head">
+            <div>
+                <h1 class="mb-1">Dashboard Overview</h1>
+                <p class="text-secondary mb-0">Track products and appointment workflows in real time.</p>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Total Appointments</h5>
-                <p class="display-6 mb-0">@ViewBag.TotalAppointments</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Pending Appointments</h5>
-                <p class="display-6 mb-0">@ViewBag.PendingAppointments</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Approved Appointments</h5>
-                <p class="display-6 mb-0">@ViewBag.ApprovedAppointments</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="mt-4 d-flex gap-2">
-    <a asp-action="ManageGlasses" class="btn btn-outline-primary">Manage Glasses</a>
-    <a asp-action="ManageAppointments" class="btn btn-outline-secondary">Manage Appointments</a>
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+                <div class="dashboard-card h-100">
+                    <p class="text-secondary small mb-1">Total Glasses</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.TotalGlasses</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="dashboard-card h-100">
+                    <p class="text-secondary small mb-1">Total Appointments</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.TotalAppointments</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="dashboard-card h-100">
+                    <p class="text-secondary small mb-1">Pending</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.PendingAppointments</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="dashboard-card h-100">
+                    <p class="text-secondary small mb-1">Approved</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.ApprovedAppointments</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <a asp-action="ManageGlasses" class="btn btn-soft"><i class="bi bi-box-seam me-2"></i>Manage Glasses</a>
+            <a asp-action="ManageAppointments" class="btn btn-brand"><i class="bi bi-calendar-check me-2"></i>Manage Appointments</a>
+        </div>
+    </section>
 </div>
