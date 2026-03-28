@@ -1,7 +1,6 @@
 ﻿using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace EyeClinicApp.Data
 {
@@ -12,5 +11,39 @@ namespace EyeClinicApp.Data
 
         public DbSet<Glass> Glasses { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<TimeSlot> TimeSlots { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<TimeSlot>()
+                .HasIndex(t => new { t.StartTime, t.EndTime })
+                .IsUnique();
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.AppointmentDate, a.TimeSlotId })
+                .IsUnique()
+                .HasFilter($"[{nameof(Appointment.Status)}] <> '{AppointmentStatus.Rejected}' AND [{nameof(Appointment.Status)}] <> '{AppointmentStatus.Completed}'");
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.NormalizedPhoneNumber, a.Status });
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.TimeSlot)
+                .WithMany(t => t.Appointments)
+                .HasForeignKey(a => a.TimeSlotId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.ModifiedByAdmin)
+                .WithMany()
+                .HasForeignKey(a => a.ModifiedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Appointment>()
+                .Property(a => a.AppointmentDate)
+                .HasColumnType("date");
+        }
     }
 }

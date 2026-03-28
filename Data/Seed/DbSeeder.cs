@@ -49,6 +49,20 @@ namespace EyeClinicApp.Data.Seed
                 await userManager.AddToRoleAsync(adminUser, AdminRoleName);
             }
 
+            if (!await context.TimeSlots.AnyAsync())
+            {
+                await context.TimeSlots.AddRangeAsync(new[]
+                {
+                    new TimeSlot { StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(9, 30, 0), Label = "09:00 AM - 09:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(9, 30, 0), EndTime = new TimeSpan(10, 0, 0), Label = "09:30 AM - 10:00 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(10, 30, 0), Label = "10:00 AM - 10:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(10, 30, 0), EndTime = new TimeSpan(11, 0, 0), Label = "10:30 AM - 11:00 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(11, 30, 0), Label = "11:00 AM - 11:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(14, 30, 0), Label = "02:00 PM - 02:30 PM" },
+                    new TimeSlot { StartTime = new TimeSpan(14, 30, 0), EndTime = new TimeSpan(15, 0, 0), Label = "02:30 PM - 03:00 PM" }
+                });
+            }
+
             if (!await context.Glasses.AnyAsync())
             {
                 await context.Glasses.AddRangeAsync(new[]
@@ -80,21 +94,36 @@ namespace EyeClinicApp.Data.Seed
                 });
             }
 
+            await context.SaveChangesAsync();
+
             if (!await context.Appointments.AnyAsync())
             {
+                var firstSlotId = await context.TimeSlots.OrderBy(t => t.StartTime).Select(t => t.Id).FirstAsync();
+
                 await context.Appointments.AddRangeAsync(new[]
                 {
                     new Appointment
                     {
-                        UserId = adminUser.Id,
-                        AppointmentDate = DateTime.UtcNow.AddDays(2),
-                        Status = "Pending"
+                        Name = "System Administrator",
+                        PhoneNumber = "+1-555-123-4567",
+                        NormalizedPhoneNumber = "15551234567",
+                        Email = adminUser.Email,
+                        AppointmentDate = DateTime.UtcNow.Date.AddDays(2),
+                        TimeSlotId = firstSlotId,
+                        Status = AppointmentStatus.Pending,
+                        CreatedAtUtc = DateTime.UtcNow
                     },
                     new Appointment
                     {
-                        UserId = adminUser.Id,
-                        AppointmentDate = DateTime.UtcNow.AddDays(7),
-                        Status = "Confirmed"
+                        Name = "John Doe",
+                        PhoneNumber = "+1-555-777-0099",
+                        NormalizedPhoneNumber = "15557770099",
+                        Email = "john@example.com",
+                        AppointmentDate = DateTime.UtcNow.Date.AddDays(-2),
+                        TimeSlotId = firstSlotId,
+                        Status = AppointmentStatus.Completed,
+                        CreatedAtUtc = DateTime.UtcNow.AddDays(-10),
+                        UpdatedAtUtc = DateTime.UtcNow.AddDays(-2)
                     }
                 });
             }
