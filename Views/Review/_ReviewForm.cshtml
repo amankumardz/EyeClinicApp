@@ -1,0 +1,38 @@
+@model EyeClinicApp.Models.Review
+
+<form method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="CreatedAt" type="hidden" />
+
+    <div class="col-md-6">
+        <label asp-for="ClientName" class="form-label"></label>
+        <input asp-for="ClientName" class="form-control" />
+        <span asp-validation-for="ClientName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Rating" class="form-label"></label>
+        <input asp-for="Rating" class="form-control" />
+        <span asp-validation-for="Rating" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="ClientImageUrl" class="form-label"></label>
+        <input asp-for="ClientImageUrl" class="form-control" />
+        <span asp-validation-for="ClientImageUrl" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="ReviewText" class="form-label"></label>
+        <textarea asp-for="ReviewText" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="ReviewText" class="text-danger"></span>
+    </div>
+    <div class="col-12 form-check">
+        <input asp-for="IsApproved" class="form-check-input" />
+        <label asp-for="IsApproved" class="form-check-label"></label>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-brand">Save</button>
+        <a asp-action="Manage" class="btn btn-soft">Back</a>
+    </div>
+</form>
+
+<partial name="_ValidationScriptsPartial" />

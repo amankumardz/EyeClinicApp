@@ -9,6 +9,8 @@
             <a asp-action="Dashboard" class="nav-link active"><i class="bi bi-grid me-2"></i>Dashboard</a>
             <a asp-action="ManageAppointments" class="nav-link"><i class="bi bi-calendar3 me-2"></i>Appointments</a>
             <a asp-action="ManageGlasses" class="nav-link"><i class="bi bi-eyeglasses me-2"></i>Glasses</a>
+            <a asp-controller="Team" asp-action="Manage" class="nav-link"><i class="bi bi-people me-2"></i>Manage Team</a>
+            <a asp-controller="Review" asp-action="Manage" class="nav-link"><i class="bi bi-chat-square-quote me-2"></i>Manage Reviews</a>
         </nav>
     </aside>
 
@@ -16,7 +18,7 @@
         <div class="page-head">
             <div>
                 <h1 class="mb-1">Dashboard Overview</h1>
-                <p class="text-secondary mb-0">Track products and appointment workflows in real time.</p>
+                <p class="text-secondary mb-0">Track clinic catalog, appointments, team members, and testimonials.</p>
             </div>
         </div>
 
@@ -35,21 +37,23 @@
             </div>
             <div class="col-sm-6 col-xl-3">
                 <div class="dashboard-card h-100">
-                    <p class="text-secondary small mb-1">Pending</p>
-                    <p class="display-6 fw-bold mb-0">@ViewBag.PendingAppointments</p>
+                    <p class="text-secondary small mb-1">Team Members</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.TotalTeamMembers</p>
                 </div>
             </div>
             <div class="col-sm-6 col-xl-3">
                 <div class="dashboard-card h-100">
-                    <p class="text-secondary small mb-1">Approved</p>
-                    <p class="display-6 fw-bold mb-0">@ViewBag.ApprovedAppointments</p>
+                    <p class="text-secondary small mb-1">Approved Reviews</p>
+                    <p class="display-6 fw-bold mb-0">@ViewBag.ApprovedReviews</p>
                 </div>
             </div>
         </div>
 
         <div class="mt-4 d-flex flex-wrap gap-2">
             <a asp-action="ManageGlasses" class="btn btn-soft"><i class="bi bi-box-seam me-2"></i>Manage Glasses</a>
-            <a asp-action="ManageAppointments" class="btn btn-brand"><i class="bi bi-calendar-check me-2"></i>Manage Appointments</a>
+            <a asp-action="ManageAppointments" class="btn btn-soft"><i class="bi bi-calendar-check me-2"></i>Manage Appointments</a>
+            <a asp-controller="Team" asp-action="Manage" class="btn btn-brand"><i class="bi bi-people me-2"></i>Manage Team</a>
+            <a asp-controller="Review" asp-action="Manage" class="btn btn-brand"><i class="bi bi-chat-square-quote me-2"></i>Manage Reviews</a>
         </div>
     </section>
 </div>

@@ -28,6 +28,8 @@ namespace EyeClinicApp.Controllers
             ViewBag.TotalAppointments = await _context.Appointments.CountAsync();
             ViewBag.PendingAppointments = await _context.Appointments.CountAsync(a => a.Status == AppointmentStatus.Pending);
             ViewBag.ApprovedAppointments = await _context.Appointments.CountAsync(a => a.Status == AppointmentStatus.Approved);
+            ViewBag.TotalTeamMembers = await _context.PersonProfiles.CountAsync();
+            ViewBag.ApprovedReviews = await _context.Reviews.CountAsync(r => r.IsApproved);
             return View();
         }
 

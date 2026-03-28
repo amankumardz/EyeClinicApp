@@ -95,6 +95,95 @@ namespace EyeClinicApp.Data.Seed
                 });
             }
 
+
+            if (!await context.PersonProfiles.AnyAsync())
+            {
+                await context.PersonProfiles.AddRangeAsync(new[]
+                {
+                    new PersonProfile
+                    {
+                        Name = "Dr. Emma Carter",
+                        Role = PersonProfileRole.Doctor,
+                        Qualification = "MD Ophthalmology",
+                        ExperienceYears = 12,
+                        Achievements = "Gold Medal in Ophthalmic Surgery",
+                        Bio = "Specialist in cataract and refractive care with patient-first consultation style.",
+                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-30)
+                    },
+                    new PersonProfile
+                    {
+                        Name = "Dr. Noah Bennett",
+                        Role = PersonProfileRole.Doctor,
+                        Qualification = "MS Ophthalmology",
+                        ExperienceYears = 9,
+                        Achievements = "Published 15+ clinical papers",
+                        Bio = "Focuses on glaucoma management and preventive eye health programs.",
+                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-28)
+                    },
+                    new PersonProfile
+                    {
+                        Name = "Olivia Hayes",
+                        Role = PersonProfileRole.Optometrist,
+                        Qualification = "Doctor of Optometry",
+                        ExperienceYears = 7,
+                        Achievements = "Advanced contact lens fitting specialist",
+                        Bio = "Supports vision testing, prescription accuracy, and modern lens guidance.",
+                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-26)
+                    },
+                    new PersonProfile
+                    {
+                        Name = "Mia Brooks",
+                        Role = PersonProfileRole.Staff,
+                        Qualification = "Clinic Operations Certification",
+                        ExperienceYears = 5,
+                        Achievements = "Patient satisfaction champion",
+                        Bio = "Coordinates front-desk workflows and ensures smooth appointment experiences.",
+                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-24)
+                    }
+                });
+            }
+
+            if (!await context.Reviews.AnyAsync())
+            {
+                await context.Reviews.AddRangeAsync(new[]
+                {
+                    new Review
+                    {
+                        ClientName = "Sophia Turner",
+                        Rating = 5,
+                        ReviewText = "Excellent eye exam experience. The team was very professional and supportive.",
+                        ClientImageUrl = "https://via.placeholder.com/150",
+                        IsApproved = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-10)
+                    },
+                    new Review
+                    {
+                        ClientName = "Liam Walker",
+                        Rating = 5,
+                        ReviewText = "Booking was simple and the doctor explained every detail clearly.",
+                        ClientImageUrl = "https://via.placeholder.com/150",
+                        IsApproved = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-8)
+                    },
+                    new Review
+                    {
+                        ClientName = "Ava Thompson",
+                        Rating = 4,
+                        ReviewText = "Modern clinic, friendly staff, and quick turnaround for my prescription.",
+                        ClientImageUrl = "https://via.placeholder.com/150",
+                        IsApproved = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-6)
+                    }
+                });
+            }
             await context.SaveChangesAsync();
 
             if (!await context.Appointments.AnyAsync())
@@ -228,6 +317,38 @@ BEGIN
     ALTER TABLE [dbo].[Appointments] WITH NOCHECK
     ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
         FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+END
+
+
+IF OBJECT_ID(N'[dbo].[PersonProfiles]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[PersonProfiles](
+        [Id] INT IDENTITY(1,1) NOT NULL,
+        [Name] nvarchar(150) NOT NULL,
+        [Role] nvarchar(30) NOT NULL,
+        [Qualification] nvarchar(200) NULL,
+        [ExperienceYears] int NOT NULL,
+        [Achievements] nvarchar(2000) NULL,
+        [Bio] nvarchar(2000) NULL,
+        [ProfileImageUrl] nvarchar(1000) NOT NULL,
+        [IsActive] bit NOT NULL CONSTRAINT [DF_PersonProfiles_IsActive] DEFAULT(1),
+        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_PersonProfiles_CreatedAt] DEFAULT(GETUTCDATE()),
+        CONSTRAINT [PK_PersonProfiles] PRIMARY KEY ([Id])
+    );
+END
+
+IF OBJECT_ID(N'[dbo].[Reviews]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Reviews](
+        [Id] INT IDENTITY(1,1) NOT NULL,
+        [ClientName] nvarchar(150) NOT NULL,
+        [Rating] int NOT NULL,
+        [ReviewText] nvarchar(2000) NOT NULL,
+        [ClientImageUrl] nvarchar(1000) NOT NULL,
+        [IsApproved] bit NOT NULL CONSTRAINT [DF_Reviews_IsApproved] DEFAULT(0),
+        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_Reviews_CreatedAt] DEFAULT(GETUTCDATE()),
+        CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id])
+    );
 END
 ");
         }

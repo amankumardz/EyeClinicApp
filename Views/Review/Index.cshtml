@@ -1,0 +1,29 @@
+@model IReadOnlyCollection<EyeClinicApp.Models.Review>
+@{
+    ViewData["Title"] = "Client Reviews";
+}
+
+<section class="page-head mb-4">
+    <div>
+        <h1 class="mb-1">Client Reviews</h1>
+        <p class="text-secondary mb-0">Real testimonials from our patients.</p>
+    </div>
+</section>
+
+<div class="row g-4">
+    @foreach (var review in Model)
+    {
+        <div class="col-md-6 col-xl-4">
+            <article class="review-card h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="@review.ClientImageUrl" alt="@review.ClientName" class="avatar-mini" />
+                    <div>
+                        <h6 class="mb-0">@review.ClientName</h6>
+                        <small class="text-warning">@string.Concat(Enumerable.Repeat("⭐", review.Rating))</small>
+                    </div>
+                </div>
+                <p class="text-secondary mb-0">@review.ReviewText</p>
+            </article>
+        </div>
+    }
+</div>

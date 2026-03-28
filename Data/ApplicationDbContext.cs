@@ -12,6 +12,8 @@ namespace EyeClinicApp.Data
         public DbSet<Glass> Glasses { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
+        public DbSet<PersonProfile> PersonProfiles { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -48,6 +50,14 @@ namespace EyeClinicApp.Data
             builder.Entity<Appointment>()
                 .Property(a => a.AppointmentDate)
                 .HasColumnType("date");
+
+            builder.Entity<PersonProfile>()
+                .Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            builder.Entity<Review>()
+                .Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }
