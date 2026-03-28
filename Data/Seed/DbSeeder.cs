@@ -19,6 +19,7 @@ namespace EyeClinicApp.Data.Seed
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             await context.Database.MigrateAsync();
+            await EnsureSchemaCompatibilityAsync(context);
 
             if (!await roleManager.RoleExistsAsync(AdminRoleName))
             {
@@ -133,5 +134,102 @@ namespace EyeClinicApp.Data.Seed
 
         public static string GetAdminCredentialsSummary() =>
             $"Admin login => Email: {AdminEmail}, Password: {AdminPassword}";
+
+        private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
+        {
+            // Safety net for environments where migration history is out-of-sync with actual objects.
+            // This keeps startup resilient on partially upgraded databases.
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[dbo].[TimeSlots]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[TimeSlots](
+        [Id] INT IDENTITY(1,1) NOT NULL,
+        [StartTime] time NOT NULL,
+        [EndTime] time NOT NULL,
+        [IsActive] bit NOT NULL CONSTRAINT [DF_TimeSlots_IsActive] DEFAULT(1),
+        [Label] nvarchar(100) NULL,
+        CONSTRAINT [PK_TimeSlots] PRIMARY KEY ([Id])
+    );
+END
+
+IF COL_LENGTH('dbo.Appointments', 'TimeSlotId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [TimeSlotId] INT NOT NULL CONSTRAINT [DF_Appointments_TimeSlotId] DEFAULT(1);
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Name') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Name] nvarchar(150) NOT NULL CONSTRAINT [DF_Appointments_Name] DEFAULT('Walk-in Client');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'PhoneNumber') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [PhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_PhoneNumber] DEFAULT('0000000000');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'NormalizedPhoneNumber') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [NormalizedPhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_NormalizedPhoneNumber] DEFAULT('0000000000');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Email') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Email] nvarchar(150) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Age') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Age] int NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'ReasonForVisit') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [ReasonForVisit] nvarchar(1000) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Address') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Address] nvarchar(500) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'ModifiedByAdminId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [ModifiedByAdminId] nvarchar(450) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'CreatedAtUtc') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [CreatedAtUtc] datetime2 NOT NULL CONSTRAINT [DF_Appointments_CreatedAtUtc] DEFAULT(GETUTCDATE());
+END
+
+IF COL_LENGTH('dbo.Appointments', 'UpdatedAtUtc') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [UpdatedAtUtc] datetime2 NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_TimeSlots_TimeSlotId'
+)
+BEGIN
+    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+    ADD CONSTRAINT [FK_Appointments_TimeSlots_TimeSlotId]
+        FOREIGN KEY([TimeSlotId]) REFERENCES [dbo].[TimeSlots]([Id]);
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_ModifiedByAdminId'
+)
+BEGIN
+    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+    ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
+        FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+END
+");
+        }
     }
 }
