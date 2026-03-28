@@ -1,3 +1,4 @@
+@model EyeClinicApp.ViewModels.HomeIndexViewModel
 @{
     ViewData["Title"] = "Home";
 }
@@ -49,19 +50,56 @@
         </div>
         <div class="col-md-4">
             <div class="feature-card h-100 p-4">
-                <div class="feature-icon mb-3"><i class="bi bi-eyeglasses"></i></div>
-                <h5>Browse Products</h5>
-                <p class="text-secondary">Explore modern, stylish frames with clean card-based product browsing.</p>
-                <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft mt-2">View Catalog</a>
+                <div class="feature-icon mb-3"><i class="bi bi-people"></i></div>
+                <h5>Meet Our Team</h5>
+                <p class="text-secondary">Explore specialist doctors, optometrists, and clinic support staff.</p>
+                <a asp-controller="Team" asp-action="Index" class="btn btn-soft mt-2">View Team</a>
             </div>
         </div>
         <div class="col-md-4">
             <div class="feature-card h-100 p-4">
-                <div class="feature-icon mb-3"><i class="bi bi-speedometer2"></i></div>
-                <h5>Admin Panel</h5>
-                <p class="text-secondary">Manage appointments and products from a refined dashboard experience.</p>
-                <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-soft mt-2">Open Dashboard</a>
+                <div class="feature-icon mb-3"><i class="bi bi-chat-square-quote"></i></div>
+                <h5>Client Reviews</h5>
+                <p class="text-secondary">Read trusted testimonials from patients who visited our clinic.</p>
+                <a asp-controller="Review" asp-action="Index" class="btn btn-soft mt-2">Read Reviews</a>
             </div>
         </div>
+    </div>
+</section>
+
+<section class="mb-3 fade-in" style="animation-delay: .12s;">
+    <div class="page-head">
+        <div>
+            <h2 class="section-title mb-1">Top Client Reviews</h2>
+            <p class="text-secondary mb-0">Showing our latest approved testimonials.</p>
+        </div>
+        <a asp-controller="Review" asp-action="Index" class="btn btn-soft">View All Reviews</a>
+    </div>
+
+    <div class="row g-3 g-lg-4">
+        @if (Model.TopReviews.Count == 0)
+        {
+            <div class="col-12">
+                <div class="panel-card p-4 text-secondary">No approved reviews available yet.</div>
+            </div>
+        }
+        else
+        {
+            @foreach (var review in Model.TopReviews)
+            {
+                <div class="col-md-6 col-xl-4">
+                    <article class="review-card h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <img src="@review.ClientImageUrl" alt="@review.ClientName" class="avatar-mini" />
+                            <div>
+                                <h6 class="mb-0">@review.ClientName</h6>
+                                <small class="text-warning">@string.Concat(Enumerable.Repeat("⭐", review.Rating))</small>
+                            </div>
+                        </div>
+                        <p class="text-secondary mb-0">@review.ReviewText</p>
+                    </article>
+                </div>
+            }
+        }
     </div>
 </section>
