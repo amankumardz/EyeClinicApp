@@ -336,6 +336,13 @@ BEGIN
         CONSTRAINT [PK_PersonProfiles] PRIMARY KEY ([Id])
     );
 END
+ELSE
+BEGIN
+    IF COL_LENGTH('dbo.PersonProfiles', 'ProfileImageBase64') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[PersonProfiles] ADD [ProfileImageBase64] nvarchar(max) NULL;
+    END
+END
 
 IF OBJECT_ID(N'[dbo].[Reviews]', N'U') IS NULL
 BEGIN
@@ -349,6 +356,21 @@ BEGIN
         [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_Reviews_CreatedAt] DEFAULT(GETUTCDATE()),
         CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id])
     );
+END
+ELSE
+BEGIN
+    IF COL_LENGTH('dbo.Reviews', 'ClientImageBase64') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[Reviews] ADD [ClientImageBase64] nvarchar(max) NULL;
+    END
+END
+
+IF OBJECT_ID(N'[dbo].[Glasses]', N'U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Glasses', 'ImageBase64') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[Glasses] ADD [ImageBase64] nvarchar(max) NULL;
+    END
 END
 ");
         }
