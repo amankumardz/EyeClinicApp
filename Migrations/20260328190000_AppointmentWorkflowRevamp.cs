@@ -144,6 +144,36 @@ namespace EyeClinicApp.Migrations
                     NormalizedPhoneNumber = ISNULL(NULLIF(NormalizedPhoneNumber, ''), '0000000000');
             ");
 
+
+            migrationBuilder.Sql(@"
+                ;WITH DuplicateActiveAppointments AS (
+                    SELECT
+                        Id,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY AppointmentDate, TimeSlotId
+                            ORDER BY
+                                CASE
+                                    WHEN Status = 'Approved' THEN 1
+                                    WHEN Status = 'Pending' THEN 2
+                                    ELSE 3
+                                END,
+                                CreatedAtUtc,
+                                Id
+                        ) AS RowNumber
+                    FROM Appointments
+                    WHERE Status <> 'Rejected' AND Status <> 'Completed'
+                )
+                UPDATE Appointments
+                SET
+                    Status = 'Rejected',
+                    UpdatedAtUtc = GETUTCDATE()
+                WHERE Id IN (
+                    SELECT Id
+                    FROM DuplicateActiveAppointments
+                    WHERE RowNumber > 1
+                );
+            ");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_AppointmentDate_TimeSlotId",
                 table: "Appointments",
