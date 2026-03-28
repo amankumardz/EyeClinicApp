@@ -1,0 +1,22 @@
+@model EyeClinicApp.Models.Appointment
+@{
+    ViewData["Title"] = "Book Appointment";
+}
+
+<h1 class="mb-4">Book an Appointment</h1>
+
+<form asp-action="Book" method="post" class="card p-4 shadow-sm">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="AppointmentDate" class="form-label"></label>
+        <input asp-for="AppointmentDate" class="form-control" type="datetime-local" />
+        <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Book Appointment</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

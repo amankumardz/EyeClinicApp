@@ -1,5 +1,6 @@
-﻿using EyeClinicApp.Data;
+using EyeClinicApp.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EyeClinicApp.Controllers
 {
@@ -12,9 +13,13 @@ namespace EyeClinicApp.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var glasses = _context.Glasses.ToList();
+            var glasses = await _context.Glasses
+                .AsNoTracking()
+                .OrderBy(g => g.Brand)
+                .ThenBy(g => g.Name)
+                .ToListAsync();
             return View(glasses);
         }
     }

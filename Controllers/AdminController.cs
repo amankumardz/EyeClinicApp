@@ -1,7 +1,8 @@
-﻿using EyeClinicApp.Data;
+using EyeClinicApp.Data;
 using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EyeClinicApp.Controllers
 {
@@ -15,32 +16,48 @@ namespace EyeClinicApp.Controllers
             _context = context;
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
+            ViewBag.TotalGlasses = await _context.Glasses.CountAsync();
+            ViewBag.TotalAppointments = await _context.Appointments.CountAsync();
+            ViewBag.PendingAppointments = await _context.Appointments.CountAsync(a => a.Status == "Pending");
             return View();
         }
 
-        public IActionResult ManageGlasses()
+        public async Task<IActionResult> ManageGlasses()
         {
-            return View(_context.Glasses.ToList());
+            var glasses = await _context.Glasses.AsNoTracking().OrderBy(g => g.Brand).ThenBy(g => g.Name).ToListAsync();
+            return View(glasses);
         }
 
         public IActionResult AddGlass()
         {
-            return View();
+            return View(new Glass());
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddGlass(Glass glass)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(glass);
+            }
+
             _context.Glasses.Add(glass);
             await _context.SaveChangesAsync();
-            return RedirectToAction("ManageGlasses");
+            return RedirectToAction(nameof(ManageGlasses));
         }
 
-        public IActionResult ManageAppointments()
+        public async Task<IActionResult> ManageAppointments()
         {
-            return View(_context.Appointments.ToList());
+            var appointments = await _context.Appointments
+                .AsNoTracking()
+                .Include(a => a.User)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToListAsync();
+
+            return View(appointments);
         }
     }
 }

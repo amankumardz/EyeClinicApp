@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Total Glasses</h5>
+                <p class="display-6 mb-0">@ViewBag.TotalGlasses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Total Appointments</h5>
+                <p class="display-6 mb-0">@ViewBag.TotalAppointments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Pending Appointments</h5>
+                <p class="display-6 mb-0">@ViewBag.PendingAppointments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <a asp-action="ManageGlasses" class="btn btn-outline-primary">Manage Glasses</a>
+    <a asp-action="ManageAppointments" class="btn btn-outline-secondary">Manage Appointments</a>
+</div>

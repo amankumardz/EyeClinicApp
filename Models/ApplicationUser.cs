@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace EyeClinicApp.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public string FullName { get; set; }
+        [MaxLength(150)]
+        public string? FullName { get; set; }
     }
 }
