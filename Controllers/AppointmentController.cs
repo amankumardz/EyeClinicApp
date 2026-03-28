@@ -1,8 +1,9 @@
-﻿using EyeClinicApp.Data;
+using EyeClinicApp.Data;
 using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EyeClinicApp.Controllers
 {
@@ -20,13 +21,28 @@ namespace EyeClinicApp.Controllers
 
         public IActionResult Book()
         {
-            return View();
+            return View(new Appointment { AppointmentDate = DateTime.UtcNow.AddDays(1) });
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Book(Appointment model)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+            {
+                return Challenge();
+            }
+
+            if (model.AppointmentDate <= DateTime.UtcNow)
+            {
+                ModelState.AddModelError(nameof(Appointment.AppointmentDate), "Appointment must be scheduled in the future.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
             model.UserId = user.Id;
             model.Status = "Pending";
@@ -34,16 +50,22 @@ namespace EyeClinicApp.Controllers
             _context.Appointments.Add(model);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("MyAppointments");
+            return RedirectToAction(nameof(MyAppointments));
         }
 
         public async Task<IActionResult> MyAppointments()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+            {
+                return Challenge();
+            }
 
-            var appointments = _context.Appointments
+            var appointments = await _context.Appointments
+                .AsNoTracking()
                 .Where(a => a.UserId == user.Id)
-                .ToList();
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToListAsync();
 
             return View(appointments);
         }

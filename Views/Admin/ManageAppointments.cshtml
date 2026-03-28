@@ -1,0 +1,35 @@
+@model IEnumerable<EyeClinicApp.Models.Appointment>
+@{
+    ViewData["Title"] = "Manage Appointments";
+}
+
+<h1 class="mb-4">Manage Appointments</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No appointments are currently scheduled.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appointment in Model)
+            {
+                <tr>
+                    <td>@(appointment.User?.FullName ?? appointment.User?.UserName ?? "Unknown")</td>
+                    <td>@(appointment.User?.Email ?? "N/A")</td>
+                    <td>@appointment.AppointmentDate.ToString("f")</td>
+                    <td>@appointment.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
