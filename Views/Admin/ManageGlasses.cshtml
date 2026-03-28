@@ -8,7 +8,7 @@
     <a asp-action="AddGlass" class="btn btn-primary">Add New Glasses</a>
 </div>
 
-@if (!Model.Any())
+@if (Model is null || !Model.Any())
 {
     <div class="alert alert-info">No glasses have been added yet.</div>
 }

@@ -5,7 +5,7 @@
 
 <h1 class="mb-4">Manage Appointments</h1>
 
-@if (!Model.Any())
+@if (Model is null || !Model.Any())
 {
     <div class="alert alert-info">No appointments are currently scheduled.</div>
 }
