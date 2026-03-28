@@ -1,6 +1,7 @@
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using EyeClinicApp.Models;
@@ -94,7 +95,10 @@ public class RegisterModel : PageModel
 
                 _logger.LogInformation("Email confirmation link generated for {Email}: {Link}", Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, new[]
+                {
+                    new Claim("FullName", string.IsNullOrWhiteSpace(user.FullName) ? Input.Email : user.FullName)
+                });
                 return LocalRedirect(returnUrl);
             }
 

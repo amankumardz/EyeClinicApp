@@ -20,6 +20,7 @@ else
                 <th>Name</th>
                 <th>Brand</th>
                 <th class="text-end">Price</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -29,6 +30,16 @@ else
                     <td>@glass.Name</td>
                     <td>@glass.Brand</td>
                     <td class="text-end">@glass.Price.ToString("C")</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2">
+                            <a asp-action="EditGlass" asp-route-id="@glass.Id" class="btn btn-primary btn-sm">Edit</a>
+                            <form asp-action="DeleteGlass" asp-route-id="@glass.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to delete @glass.Name?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             }
         </tbody>
