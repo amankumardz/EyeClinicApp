@@ -1,7 +1,8 @@
-﻿using EyeClinicApp.Data;
+using EyeClinicApp.Data;
 using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EyeClinicApp.Controllers
 {
@@ -15,14 +16,16 @@ namespace EyeClinicApp.Controllers
             _context = context;
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
+            ViewData["GlassesCount"] = await _context.Glasses.CountAsync();
+            ViewData["AppointmentsCount"] = await _context.Appointments.CountAsync();
             return View();
         }
 
-        public IActionResult ManageGlasses()
+        public async Task<IActionResult> ManageGlasses()
         {
-            return View(_context.Glasses.ToList());
+            return View(await _context.Glasses.AsNoTracking().ToListAsync());
         }
 
         public IActionResult AddGlass()
@@ -31,16 +34,22 @@ namespace EyeClinicApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddGlass(Glass glass)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(glass);
+            }
+
             _context.Glasses.Add(glass);
             await _context.SaveChangesAsync();
-            return RedirectToAction("ManageGlasses");
+            return RedirectToAction(nameof(ManageGlasses));
         }
 
-        public IActionResult ManageAppointments()
+        public async Task<IActionResult> ManageAppointments()
         {
-            return View(_context.Appointments.ToList());
+            return View(await _context.Appointments.AsNoTracking().OrderByDescending(a => a.AppointmentDate).ToListAsync());
         }
     }
 }

@@ -1,0 +1,35 @@
+@model IEnumerable<EyeClinicApp.Models.Glass>
+@{
+    ViewData["Title"] = "Glasses Catalog";
+}
+
+<h1>Glasses Catalog</h1>
+
+@if (!Model.Any())
+{
+    <p>No glasses are available yet.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var glass in Model)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    @if (!string.IsNullOrWhiteSpace(glass.ImageUrl))
+                    {
+                        <img src="@glass.ImageUrl" class="card-img-top" alt="@glass.Name" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@glass.Name</h5>
+                        <h6 class="card-subtitle text-muted">@glass.Brand</h6>
+                        <p class="card-text mt-2">@glass.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <strong>@glass.Price.ToString("C")</strong>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

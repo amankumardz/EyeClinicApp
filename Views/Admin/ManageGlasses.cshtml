@@ -1,0 +1,30 @@
+@model IEnumerable<EyeClinicApp.Models.Glass>
+@{
+    ViewData["Title"] = "Manage Glasses";
+}
+
+<h1>Manage Glasses</h1>
+
+<p>
+    <a asp-action="AddGlass" class="btn btn-primary">Add New Glass</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var glass in Model)
+        {
+            <tr>
+                <td>@glass.Name</td>
+                <td>@glass.Brand</td>
+                <td>@glass.Price.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
