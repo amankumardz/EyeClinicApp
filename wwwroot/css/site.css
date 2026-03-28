@@ -354,6 +354,45 @@ h5 {
     letter-spacing: 0.03em;
 }
 
+.auth-shell {
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.auth-hero {
+    min-height: 100%;
+    border-radius: 24px;
+    background: linear-gradient(140deg, #06202f 0%, #134e63 45%, #00bfa6 120%);
+    box-shadow: var(--shadow-md);
+}
+
+.auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e7eef7;
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.link-muted {
+    color: var(--muted);
+}
+
+.link-muted:hover {
+    color: var(--brand-dark);
+}
+
 .fade-in {
     opacity: 0;
     transform: translateY(14px);
@@ -387,6 +426,11 @@ h5 {
 
 @media (max-width: 575.98px) {
     .hero-panel {
+        border-radius: 18px;
+    }
+
+    .auth-hero,
+    .auth-card {
         border-radius: 18px;
     }
 
