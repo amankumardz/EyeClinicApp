@@ -1,9 +1,13 @@
-﻿@{
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<h1>Welcome to Eye Care Clinic</h1>
-<p>Best Eye Specialist in your area</p>
+<div class="text-center">
+    <h1>Welcome to Eye Care Clinic</h1>
+    <p>Trusted eye specialists and modern eyewear in one place.</p>
 
-<a href="/Catalog">View Glasses</a>
-<a href="/Appointment/Book">Book Appointment</a>
+    <div class="d-flex justify-content-center gap-2 mt-3">
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary">View Glasses</a>
+        <a asp-controller="Appointment" asp-action="Book" class="btn btn-outline-primary">Book Appointment</a>
+    </div>
+</div>
