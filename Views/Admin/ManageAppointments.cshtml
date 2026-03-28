@@ -11,23 +11,48 @@
 }
 else
 {
-    <table class="table table-striped">
+    <table class="table table-striped table-bordered align-middle">
         <thead>
             <tr>
-                <th>Patient</th>
+                <th>Client</th>
+                <th>Phone</th>
                 <th>Email</th>
                 <th>Date</th>
+                <th>Slot</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var appointment in Model)
             {
                 <tr>
-                    <td>@(appointment.User?.FullName ?? appointment.User?.UserName ?? "Unknown")</td>
-                    <td>@(appointment.User?.Email ?? "N/A")</td>
-                    <td>@appointment.AppointmentDate.ToString("f")</td>
-                    <td>@appointment.Status</td>
+                    <td>@appointment.Name</td>
+                    <td>@appointment.PhoneNumber</td>
+                    <td>@(appointment.Email ?? "N/A")</td>
+                    <td>@appointment.AppointmentDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(appointment.TimeSlot?.GetDisplayLabel() ?? "N/A")</td>
+                    <td><span class="badge bg-secondary">@appointment.Status</span></td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            <form asp-action="ChangeStatus" method="post">
+                                <input type="hidden" name="id" value="@appointment.Id" />
+                                <input type="hidden" name="status" value="Approved" />
+                                <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                            </form>
+                            <form asp-action="ChangeStatus" method="post">
+                                <input type="hidden" name="id" value="@appointment.Id" />
+                                <input type="hidden" name="status" value="Rejected" />
+                                <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                            </form>
+                            <form asp-action="ChangeStatus" method="post">
+                                <input type="hidden" name="id" value="@appointment.Id" />
+                                <input type="hidden" name="status" value="Completed" />
+                                <button class="btn btn-sm btn-dark" type="submit">Complete</button>
+                            </form>
+                            <a asp-action="EditAppointment" asp-route-id="@appointment.Id" class="btn btn-sm btn-primary">Modify</a>
+                        </div>
+                    </td>
                 </tr>
             }
         </tbody>

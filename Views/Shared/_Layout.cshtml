@@ -20,11 +20,7 @@
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Catalog" asp-action="Index">Catalog</a></li>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Appointment" asp-action="Book">Book Appointment</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Appointment" asp-action="MyAppointments">My Appointments</a></li>
-                        }
+                        <li class="nav-item"><a class="nav-link" asp-controller="Appointment" asp-action="Book">Book Appointment</a></li>
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Admin</a></li>

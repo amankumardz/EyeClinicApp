@@ -19,6 +19,7 @@ namespace EyeClinicApp.Data.Seed
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             await context.Database.MigrateAsync();
+            await EnsureSchemaCompatibilityAsync(context);
 
             if (!await roleManager.RoleExistsAsync(AdminRoleName))
             {
@@ -47,6 +48,20 @@ namespace EyeClinicApp.Data.Seed
             if (!await userManager.IsInRoleAsync(adminUser, AdminRoleName))
             {
                 await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+            }
+
+            if (!await context.TimeSlots.AnyAsync())
+            {
+                await context.TimeSlots.AddRangeAsync(new[]
+                {
+                    new TimeSlot { StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(9, 30, 0), Label = "09:00 AM - 09:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(9, 30, 0), EndTime = new TimeSpan(10, 0, 0), Label = "09:30 AM - 10:00 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(10, 30, 0), Label = "10:00 AM - 10:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(10, 30, 0), EndTime = new TimeSpan(11, 0, 0), Label = "10:30 AM - 11:00 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(11, 30, 0), Label = "11:00 AM - 11:30 AM" },
+                    new TimeSlot { StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(14, 30, 0), Label = "02:00 PM - 02:30 PM" },
+                    new TimeSlot { StartTime = new TimeSpan(14, 30, 0), EndTime = new TimeSpan(15, 0, 0), Label = "02:30 PM - 03:00 PM" }
+                });
             }
 
             if (!await context.Glasses.AnyAsync())
@@ -80,21 +95,36 @@ namespace EyeClinicApp.Data.Seed
                 });
             }
 
+            await context.SaveChangesAsync();
+
             if (!await context.Appointments.AnyAsync())
             {
+                var firstSlotId = await context.TimeSlots.OrderBy(t => t.StartTime).Select(t => t.Id).FirstAsync();
+
                 await context.Appointments.AddRangeAsync(new[]
                 {
                     new Appointment
                     {
-                        UserId = adminUser.Id,
-                        AppointmentDate = DateTime.UtcNow.AddDays(2),
-                        Status = "Pending"
+                        Name = "System Administrator",
+                        PhoneNumber = "+1-555-123-4567",
+                        NormalizedPhoneNumber = "15551234567",
+                        Email = adminUser.Email,
+                        AppointmentDate = DateTime.UtcNow.Date.AddDays(2),
+                        TimeSlotId = firstSlotId,
+                        Status = AppointmentStatus.Pending,
+                        CreatedAtUtc = DateTime.UtcNow
                     },
                     new Appointment
                     {
-                        UserId = adminUser.Id,
-                        AppointmentDate = DateTime.UtcNow.AddDays(7),
-                        Status = "Confirmed"
+                        Name = "John Doe",
+                        PhoneNumber = "+1-555-777-0099",
+                        NormalizedPhoneNumber = "15557770099",
+                        Email = "john@example.com",
+                        AppointmentDate = DateTime.UtcNow.Date.AddDays(-2),
+                        TimeSlotId = firstSlotId,
+                        Status = AppointmentStatus.Completed,
+                        CreatedAtUtc = DateTime.UtcNow.AddDays(-10),
+                        UpdatedAtUtc = DateTime.UtcNow.AddDays(-2)
                     }
                 });
             }
@@ -104,5 +134,102 @@ namespace EyeClinicApp.Data.Seed
 
         public static string GetAdminCredentialsSummary() =>
             $"Admin login => Email: {AdminEmail}, Password: {AdminPassword}";
+
+        private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
+        {
+            // Safety net for environments where migration history is out-of-sync with actual objects.
+            // This keeps startup resilient on partially upgraded databases.
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[dbo].[TimeSlots]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[TimeSlots](
+        [Id] INT IDENTITY(1,1) NOT NULL,
+        [StartTime] time NOT NULL,
+        [EndTime] time NOT NULL,
+        [IsActive] bit NOT NULL CONSTRAINT [DF_TimeSlots_IsActive] DEFAULT(1),
+        [Label] nvarchar(100) NULL,
+        CONSTRAINT [PK_TimeSlots] PRIMARY KEY ([Id])
+    );
+END
+
+IF COL_LENGTH('dbo.Appointments', 'TimeSlotId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [TimeSlotId] INT NOT NULL CONSTRAINT [DF_Appointments_TimeSlotId] DEFAULT(1);
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Name') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Name] nvarchar(150) NOT NULL CONSTRAINT [DF_Appointments_Name] DEFAULT('Walk-in Client');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'PhoneNumber') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [PhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_PhoneNumber] DEFAULT('0000000000');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'NormalizedPhoneNumber') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [NormalizedPhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_NormalizedPhoneNumber] DEFAULT('0000000000');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Email') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Email] nvarchar(150) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Age') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Age] int NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'ReasonForVisit') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [ReasonForVisit] nvarchar(1000) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'Address') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [Address] nvarchar(500) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'ModifiedByAdminId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [ModifiedByAdminId] nvarchar(450) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'CreatedAtUtc') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [CreatedAtUtc] datetime2 NOT NULL CONSTRAINT [DF_Appointments_CreatedAtUtc] DEFAULT(GETUTCDATE());
+END
+
+IF COL_LENGTH('dbo.Appointments', 'UpdatedAtUtc') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [UpdatedAtUtc] datetime2 NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_TimeSlots_TimeSlotId'
+)
+BEGIN
+    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+    ADD CONSTRAINT [FK_Appointments_TimeSlots_TimeSlotId]
+        FOREIGN KEY([TimeSlotId]) REFERENCES [dbo].[TimeSlots]([Id]);
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_ModifiedByAdminId'
+)
+BEGIN
+    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+    ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
+        FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+END
+");
+        }
     }
 }
