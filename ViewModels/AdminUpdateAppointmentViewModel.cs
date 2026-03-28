@@ -1,11 +1,12 @@
-using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace EyeClinicApp.ViewModels
 {
-    public class BookAppointmentViewModel
+    public class AdminUpdateAppointmentViewModel
     {
+        public int Id { get; set; }
+
         [Required]
         [MaxLength(150)]
         public string Name { get; set; } = string.Empty;
@@ -31,12 +32,16 @@ namespace EyeClinicApp.ViewModels
 
         [Required]
         [DataType(DataType.Date)]
-        [Display(Name = "Appointment Date")]
-        public DateTime AppointmentDate { get; set; } = DateTime.UtcNow.Date.AddDays(1);
+        public DateTime AppointmentDate { get; set; }
 
         [Required]
-        [Display(Name = "Time Slot")]
         public int? TimeSlotId { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string Status { get; set; } = string.Empty;
+
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         public IReadOnlyCollection<SelectListItem> AvailableSlots { get; set; } = [];
     }
