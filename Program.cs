@@ -1,4 +1,5 @@
 using EyeClinicApp.Data;
+using EyeClinicApp.Data.Seed;
 using EyeClinicApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -43,5 +44,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+
+await DbSeeder.SeedAsync(app.Services);
 
 app.Run();

@@ -1,5 +1,6 @@
 using EyeClinicApp.Data;
 using EyeClinicApp.Models;
+using EyeClinicApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,12 @@ namespace EyeClinicApp.Controllers
 
         public IActionResult Book()
         {
-            return View(new Appointment { AppointmentDate = DateTime.UtcNow.AddDays(1) });
+            return View(new BookAppointmentViewModel { AppointmentDate = DateTime.UtcNow.AddDays(1) });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Book(Appointment model)
+        public async Task<IActionResult> Book(BookAppointmentViewModel model)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user is null)
@@ -36,7 +37,7 @@ namespace EyeClinicApp.Controllers
 
             if (model.AppointmentDate <= DateTime.UtcNow)
             {
-                ModelState.AddModelError(nameof(Appointment.AppointmentDate), "Appointment must be scheduled in the future.");
+                ModelState.AddModelError(nameof(BookAppointmentViewModel.AppointmentDate), "Appointment must be scheduled in the future.");
             }
 
             if (!ModelState.IsValid)
@@ -44,10 +45,14 @@ namespace EyeClinicApp.Controllers
                 return View(model);
             }
 
-            model.UserId = user.Id;
-            model.Status = "Pending";
+            var appointment = new Appointment
+            {
+                UserId = user.Id,
+                AppointmentDate = model.AppointmentDate,
+                Status = "Pending"
+            };
 
-            _context.Appointments.Add(model);
+            _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(MyAppointments));
