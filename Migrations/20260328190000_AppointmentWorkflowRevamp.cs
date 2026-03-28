@@ -1,14 +1,10 @@
 ﻿using System;
-using EyeClinicApp.Data;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace EyeClinicApp.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260328190000_AppointmentWorkflowRevamp")]
     public partial class AppointmentWorkflowRevamp : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
