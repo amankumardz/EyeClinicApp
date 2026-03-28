@@ -41,6 +41,10 @@ namespace EyeClinicApp.Data
                 .HasForeignKey(a => a.ModifiedByAdminId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            builder.Entity<Glass>()
+                .Property(g => g.Price)
+                .HasPrecision(18, 2);
+
             builder.Entity<Appointment>()
                 .Property(a => a.AppointmentDate)
                 .HasColumnType("date");
