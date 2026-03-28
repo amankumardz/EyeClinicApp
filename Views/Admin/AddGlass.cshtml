@@ -1,12 +1,11 @@
 @model EyeClinicApp.Models.Glass
 @{
-    ViewData["Title"] = "Add Glass";
+    ViewData["Title"] = "Add Glasses";
 }
 
-<h1>Add Glass</h1>
+<h1 class="mb-4">Add Glasses</h1>
 
-<form asp-action="AddGlass" method="post">
-    @Html.AntiForgeryToken()
+<form asp-action="AddGlass" method="post" class="card p-4 shadow-sm">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="mb-3">

@@ -15,7 +15,11 @@ namespace EyeClinicApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var glasses = await _context.Glasses.AsNoTracking().ToListAsync();
+            var glasses = await _context.Glasses
+                .AsNoTracking()
+                .OrderBy(g => g.Brand)
+                .ThenBy(g => g.Name)
+                .ToListAsync();
             return View(glasses);
         }
     }

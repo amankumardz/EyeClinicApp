@@ -44,6 +44,4 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
-await DbInitializer.SeedAsync(app.Services);
-
 app.Run();

@@ -9,12 +9,13 @@ namespace EyeClinicApp.Models
         [Required]
         public string UserId { get; set; } = string.Empty;
 
+        [DataType(DataType.DateTime)]
         [Required]
-        [Display(Name = "Appointment Date")]
         public DateTime AppointmentDate { get; set; }
 
-        [Required, StringLength(30)]
-        public string Status { get; set; } = "Pending";
+        [Required]
+        [MaxLength(50)]
+        public string Status { get; set; } = string.Empty;
 
         public ApplicationUser? User { get; set; }
     }

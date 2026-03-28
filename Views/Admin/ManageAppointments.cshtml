@@ -3,24 +3,33 @@
     ViewData["Title"] = "Manage Appointments";
 }
 
-<h1>Manage Appointments</h1>
+<h1 class="mb-4">Manage Appointments</h1>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>User ID</th>
-            <th>Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var appointment in Model)
-        {
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No appointments are currently scheduled.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@appointment.UserId</td>
-                <td>@appointment.AppointmentDate.ToString("f")</td>
-                <td>@appointment.Status</td>
+                <th>Patient</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Status</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var appointment in Model)
+            {
+                <tr>
+                    <td>@(appointment.User?.FullName ?? appointment.User?.UserName ?? "Unknown")</td>
+                    <td>@(appointment.User?.Email ?? "N/A")</td>
+                    <td>@appointment.AppointmentDate.ToString("f")</td>
+                    <td>@appointment.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

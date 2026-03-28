@@ -18,19 +18,21 @@ namespace EyeClinicApp.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            ViewData["GlassesCount"] = await _context.Glasses.CountAsync();
-            ViewData["AppointmentsCount"] = await _context.Appointments.CountAsync();
+            ViewBag.TotalGlasses = await _context.Glasses.CountAsync();
+            ViewBag.TotalAppointments = await _context.Appointments.CountAsync();
+            ViewBag.PendingAppointments = await _context.Appointments.CountAsync(a => a.Status == "Pending");
             return View();
         }
 
         public async Task<IActionResult> ManageGlasses()
         {
-            return View(await _context.Glasses.AsNoTracking().ToListAsync());
+            var glasses = await _context.Glasses.AsNoTracking().OrderBy(g => g.Brand).ThenBy(g => g.Name).ToListAsync();
+            return View(glasses);
         }
 
         public IActionResult AddGlass()
         {
-            return View();
+            return View(new Glass());
         }
 
         [HttpPost]
@@ -49,7 +51,13 @@ namespace EyeClinicApp.Controllers
 
         public async Task<IActionResult> ManageAppointments()
         {
-            return View(await _context.Appointments.AsNoTracking().OrderByDescending(a => a.AppointmentDate).ToListAsync());
+            var appointments = await _context.Appointments
+                .AsNoTracking()
+                .Include(a => a.User)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToListAsync();
+
+            return View(appointments);
         }
     }
 }

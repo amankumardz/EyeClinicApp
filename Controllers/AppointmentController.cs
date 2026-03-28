@@ -21,10 +21,7 @@ namespace EyeClinicApp.Controllers
 
         public IActionResult Book()
         {
-            return View(new Appointment
-            {
-                AppointmentDate = DateTime.Today.AddDays(1)
-            });
+            return View(new Appointment { AppointmentDate = DateTime.UtcNow.AddDays(1) });
         }
 
         [HttpPost]
@@ -37,9 +34,9 @@ namespace EyeClinicApp.Controllers
                 return Challenge();
             }
 
-            if (model.AppointmentDate <= DateTime.Now)
+            if (model.AppointmentDate <= DateTime.UtcNow)
             {
-                ModelState.AddModelError(nameof(Appointment.AppointmentDate), "Please choose a future date and time.");
+                ModelState.AddModelError(nameof(Appointment.AppointmentDate), "Appointment must be scheduled in the future.");
             }
 
             if (!ModelState.IsValid)
