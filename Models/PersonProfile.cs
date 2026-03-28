@@ -27,10 +27,7 @@ namespace EyeClinicApp.Models
         [MaxLength(2000)]
         public string? Bio { get; set; }
 
-        [Required]
-        [Url]
-        [MaxLength(1000)]
-        public string ProfileImageUrl { get; set; } = "https://via.placeholder.com/150";
+        public string? ProfileImageBase64 { get; set; }
 
         public bool IsActive { get; set; } = true;
 

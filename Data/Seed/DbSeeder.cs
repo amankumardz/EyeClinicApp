@@ -73,7 +73,7 @@ namespace EyeClinicApp.Data.Seed
                         Name = "Clarity Plus",
                         Brand = "VisionPro",
                         Price = 89.99m,
-                        ImageUrl = "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80",
+                        ImageBase64 = null,
                         Description = "Lightweight daily eyewear with anti-glare coating."
                     },
                     new Glass
@@ -81,7 +81,7 @@ namespace EyeClinicApp.Data.Seed
                         Name = "Urban Focus",
                         Brand = "LensCraft",
                         Price = 129.50m,
-                        ImageUrl = "https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=1200&q=80",
+                        ImageBase64 = null,
                         Description = "Modern acetate frame designed for all-day comfort."
                     },
                     new Glass
@@ -89,7 +89,7 @@ namespace EyeClinicApp.Data.Seed
                         Name = "Reader Max",
                         Brand = "OptiLook",
                         Price = 74.00m,
-                        ImageUrl = "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80",
+                        ImageBase64 = null,
                         Description = "Premium reading glasses with blue light filter."
                     }
                 });
@@ -108,7 +108,7 @@ namespace EyeClinicApp.Data.Seed
                         ExperienceYears = 12,
                         Achievements = "Gold Medal in Ophthalmic Surgery",
                         Bio = "Specialist in cataract and refractive care with patient-first consultation style.",
-                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        ProfileImageBase64 = null,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-30)
                     },
@@ -120,7 +120,7 @@ namespace EyeClinicApp.Data.Seed
                         ExperienceYears = 9,
                         Achievements = "Published 15+ clinical papers",
                         Bio = "Focuses on glaucoma management and preventive eye health programs.",
-                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        ProfileImageBase64 = null,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-28)
                     },
@@ -132,7 +132,7 @@ namespace EyeClinicApp.Data.Seed
                         ExperienceYears = 7,
                         Achievements = "Advanced contact lens fitting specialist",
                         Bio = "Supports vision testing, prescription accuracy, and modern lens guidance.",
-                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        ProfileImageBase64 = null,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-26)
                     },
@@ -144,7 +144,7 @@ namespace EyeClinicApp.Data.Seed
                         ExperienceYears = 5,
                         Achievements = "Patient satisfaction champion",
                         Bio = "Coordinates front-desk workflows and ensures smooth appointment experiences.",
-                        ProfileImageUrl = "https://via.placeholder.com/150",
+                        ProfileImageBase64 = null,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-24)
                     }
@@ -160,7 +160,7 @@ namespace EyeClinicApp.Data.Seed
                         ClientName = "Sophia Turner",
                         Rating = 5,
                         ReviewText = "Excellent eye exam experience. The team was very professional and supportive.",
-                        ClientImageUrl = "https://via.placeholder.com/150",
+                        ClientImageBase64 = null,
                         IsApproved = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-10)
                     },
@@ -169,7 +169,7 @@ namespace EyeClinicApp.Data.Seed
                         ClientName = "Liam Walker",
                         Rating = 5,
                         ReviewText = "Booking was simple and the doctor explained every detail clearly.",
-                        ClientImageUrl = "https://via.placeholder.com/150",
+                        ClientImageBase64 = null,
                         IsApproved = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-8)
                     },
@@ -178,7 +178,7 @@ namespace EyeClinicApp.Data.Seed
                         ClientName = "Ava Thompson",
                         Rating = 4,
                         ReviewText = "Modern clinic, friendly staff, and quick turnaround for my prescription.",
-                        ClientImageUrl = "https://via.placeholder.com/150",
+                        ClientImageBase64 = null,
                         IsApproved = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-6)
                     }
@@ -330,7 +330,7 @@ BEGIN
         [ExperienceYears] int NOT NULL,
         [Achievements] nvarchar(2000) NULL,
         [Bio] nvarchar(2000) NULL,
-        [ProfileImageUrl] nvarchar(1000) NOT NULL,
+        [ProfileImageBase64] nvarchar(max) NULL,
         [IsActive] bit NOT NULL CONSTRAINT [DF_PersonProfiles_IsActive] DEFAULT(1),
         [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_PersonProfiles_CreatedAt] DEFAULT(GETUTCDATE()),
         CONSTRAINT [PK_PersonProfiles] PRIMARY KEY ([Id])
@@ -344,7 +344,7 @@ BEGIN
         [ClientName] nvarchar(150) NOT NULL,
         [Rating] int NOT NULL,
         [ReviewText] nvarchar(2000) NOT NULL,
-        [ClientImageUrl] nvarchar(1000) NOT NULL,
+        [ClientImageBase64] nvarchar(max) NULL,
         [IsApproved] bit NOT NULL CONSTRAINT [DF_Reviews_IsApproved] DEFAULT(0),
         [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_Reviews_CreatedAt] DEFAULT(GETUTCDATE()),
         CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id])

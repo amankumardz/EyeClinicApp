@@ -1,3 +1,4 @@
+using EyeClinicApp.Helpers;
 using EyeClinicApp.Models;
 using EyeClinicApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -36,13 +37,19 @@ namespace EyeClinicApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Review review)
+        public async Task<IActionResult> Create(Review review, IFormFile? imageFile)
         {
+            if (!ImageUploadHelper.IsValidImageFile(imageFile, out var fileValidationError))
+            {
+                ModelState.AddModelError("imageFile", fileValidationError);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(review);
             }
 
+            review.ClientImageBase64 = await ImageUploadHelper.ConvertToBase64Async(imageFile);
             await _reviewService.CreateAsync(review);
             return RedirectToAction(nameof(Manage));
         }
@@ -63,14 +70,36 @@ namespace EyeClinicApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Review review)
+        public async Task<IActionResult> Edit(Review review, IFormFile? imageFile)
         {
+            if (!ImageUploadHelper.IsValidImageFile(imageFile, out var fileValidationError))
+            {
+                ModelState.AddModelError("imageFile", fileValidationError);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(review);
             }
 
-            await _reviewService.UpdateAsync(review);
+            var existingReview = await _reviewService.GetByIdAsync(review.Id);
+            if (existingReview is null)
+            {
+                return NotFound();
+            }
+
+            existingReview.ClientName = review.ClientName;
+            existingReview.Rating = review.Rating;
+            existingReview.ReviewText = review.ReviewText;
+            existingReview.IsApproved = review.IsApproved;
+
+            var updatedImageBase64 = await ImageUploadHelper.ConvertToBase64Async(imageFile);
+            if (!string.IsNullOrWhiteSpace(updatedImageBase64))
+            {
+                existingReview.ClientImageBase64 = updatedImageBase64;
+            }
+
+            await _reviewService.UpdateAsync(existingReview);
             return RedirectToAction(nameof(Manage));
         }
 

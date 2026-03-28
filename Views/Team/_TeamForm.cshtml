@@ -1,9 +1,10 @@
 @model EyeClinicApp.Models.PersonProfile
 
-<form method="post" class="row g-3">
+<form method="post" enctype="multipart/form-data" class="row g-3">
     @Html.AntiForgeryToken()
     <input asp-for="Id" type="hidden" />
     <input asp-for="CreatedAt" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="col-md-6">
         <label asp-for="Name" class="form-label"></label>
@@ -26,9 +27,13 @@
         <span asp-validation-for="ExperienceYears" class="text-danger"></span>
     </div>
     <div class="col-12">
-        <label asp-for="ProfileImageUrl" class="form-label"></label>
-        <input asp-for="ProfileImageUrl" class="form-control" />
-        <span asp-validation-for="ProfileImageUrl" class="text-danger"></span>
+        <label for="imageFile" class="form-label">Profile Image</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+        <span class="text-danger" asp-validation-for="ProfileImageBase64"></span>
+        @if (!string.IsNullOrWhiteSpace(Model.ProfileImageBase64))
+        {
+            <img src="data:image/jpeg;base64,@Model.ProfileImageBase64" alt="Current profile image" class="avatar-mini mt-2" />
+        }
     </div>
     <div class="col-12">
         <label asp-for="Achievements" class="form-label"></label>

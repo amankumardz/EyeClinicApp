@@ -17,9 +17,7 @@ namespace EyeClinicApp.Models
         [Range(0, 100000)]
         public decimal Price { get; set; }
 
-        [Url]
-        [MaxLength(1000)]
-        public string? ImageUrl { get; set; }
+        public string? ImageBase64 { get; set; }
 
         [MaxLength(2000)]
         public string? Description { get; set; }

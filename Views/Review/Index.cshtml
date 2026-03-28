@@ -16,7 +16,7 @@
         <div class="col-md-6 col-xl-4">
             <article class="review-card h-100">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <img src="@review.ClientImageUrl" alt="@review.ClientName" class="avatar-mini" />
+                    <img src="@(string.IsNullOrWhiteSpace(review.ClientImageBase64) ? Url.Content("~/images/placeholders/person.svg") : $"data:image/jpeg;base64,{review.ClientImageBase64}")" alt="@review.ClientName" class="avatar-mini" />
                     <div>
                         <h6 class="mb-0">@review.ClientName</h6>
                         <small class="text-warning">@string.Concat(Enumerable.Repeat("⭐", review.Rating))</small>
