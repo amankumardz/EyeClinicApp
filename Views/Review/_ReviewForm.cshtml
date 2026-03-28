@@ -1,9 +1,10 @@
 @model EyeClinicApp.Models.Review
 
-<form method="post" class="row g-3">
+<form method="post" enctype="multipart/form-data" class="row g-3">
     @Html.AntiForgeryToken()
     <input asp-for="Id" type="hidden" />
     <input asp-for="CreatedAt" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="col-md-6">
         <label asp-for="ClientName" class="form-label"></label>
@@ -16,9 +17,13 @@
         <span asp-validation-for="Rating" class="text-danger"></span>
     </div>
     <div class="col-12">
-        <label asp-for="ClientImageUrl" class="form-label"></label>
-        <input asp-for="ClientImageUrl" class="form-control" />
-        <span asp-validation-for="ClientImageUrl" class="text-danger"></span>
+        <label for="imageFile" class="form-label">Client Image</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+        <span class="text-danger" asp-validation-for="ClientImageBase64"></span>
+        @if (!string.IsNullOrWhiteSpace(Model.ClientImageBase64))
+        {
+            <img src="data:image/jpeg;base64,@Model.ClientImageBase64" alt="Current client image" class="avatar-mini mt-2" />
+        }
     </div>
     <div class="col-12">
         <label asp-for="ReviewText" class="form-label"></label>

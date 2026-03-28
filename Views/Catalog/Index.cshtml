@@ -26,13 +26,13 @@ else
             <div class="col-sm-6 col-lg-4 col-xl-3 fade-in">
                 <article class="product-card">
                     <div class="product-media">
-                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        @if (!string.IsNullOrWhiteSpace(item.ImageBase64))
                         {
-                            <img src="@item.ImageUrl" alt="@item.Name" />
+                            <img src="data:image/jpeg;base64,@item.ImageBase64" alt="@item.Name" />
                         }
                         else
                         {
-                            <div class="d-flex h-100 align-items-center justify-content-center text-secondary">No Image</div>
+                            <img src="~/images/placeholders/product.svg" alt="No image available" />
                         }
                     </div>
                     <div class="p-3 p-lg-4 d-flex flex-column h-100">

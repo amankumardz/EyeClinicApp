@@ -188,9 +188,8 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<string>("ImageBase64")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -238,10 +237,8 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<string>("ProfileImageBase64")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Qualification")
                         .HasMaxLength(200)
@@ -265,10 +262,8 @@ namespace EyeClinicApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ClientImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<string>("ClientImageBase64")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClientName")
                         .IsRequired()
@@ -563,10 +558,8 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<string>("ProfileImageBase64")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Qualification")
                         .HasMaxLength(200)
@@ -590,10 +583,8 @@ namespace EyeClinicApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ClientImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<string>("ClientImageBase64")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClientName")
                         .IsRequired()

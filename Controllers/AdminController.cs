@@ -1,4 +1,5 @@
 using EyeClinicApp.Data;
+using EyeClinicApp.Helpers;
 using EyeClinicApp.Models;
 using EyeClinicApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -43,12 +44,19 @@ namespace EyeClinicApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddGlass(Glass glass)
+        public async Task<IActionResult> AddGlass(Glass glass, IFormFile? imageFile)
         {
+            if (!ImageUploadHelper.IsValidImageFile(imageFile, out var fileValidationError))
+            {
+                ModelState.AddModelError("imageFile", fileValidationError);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(glass);
             }
+
+            glass.ImageBase64 = await ImageUploadHelper.ConvertToBase64Async(imageFile);
 
             _context.Glasses.Add(glass);
             await _context.SaveChangesAsync();

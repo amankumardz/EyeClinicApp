@@ -5,7 +5,7 @@
 
 <h1 class="mb-4">Add Glasses</h1>
 
-<form asp-action="AddGlass" method="post" class="card p-4 shadow-sm">
+<form asp-action="AddGlass" method="post" enctype="multipart/form-data" class="card p-4 shadow-sm">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="mb-3">
@@ -27,9 +27,9 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="ImageUrl" class="form-label"></label>
-        <input asp-for="ImageUrl" class="form-control" />
-        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        <label for="imageFile" class="form-label">Glass Image</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+        <span class="text-danger" data-valmsg-for="imageFile" data-valmsg-replace="true"></span>
     </div>
 
     <div class="mb-3">

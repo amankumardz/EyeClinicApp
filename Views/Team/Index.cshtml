@@ -15,7 +15,7 @@
     {
         <div class="col-md-6 col-xl-4">
             <article class="team-card h-100">
-                <img src="@member.ProfileImageUrl" alt="@member.Name" class="team-avatar" />
+                <img src="@(string.IsNullOrWhiteSpace(member.ProfileImageBase64) ? Url.Content("~/images/placeholders/person.svg") : $"data:image/jpeg;base64,{member.ProfileImageBase64}")" alt="@member.Name" class="team-avatar" />
                 <div class="p-4">
                     <span class="badge text-bg-light mb-2">@member.Role</span>
                     <h5 class="mb-1">@member.Name</h5>
