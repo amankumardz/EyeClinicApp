@@ -1,6 +1,7 @@
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,19 @@ public class LoginModel : PageModel
             var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
             if (result.Succeeded)
             {
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user is not null)
+                {
+                    var fullName = string.IsNullOrWhiteSpace(user.FullName)
+                        ? (user.Email ?? user.UserName ?? "User")
+                        : user.FullName;
+
+                    await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, new[]
+                    {
+                        new Claim("FullName", fullName)
+                    });
+                }
+
                 _logger.LogInformation("User logged in.");
                 return LocalRedirect(returnUrl);
             }

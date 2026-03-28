@@ -42,6 +42,78 @@ namespace EyeClinicApp.Controllers
 
         public IActionResult AddGlass() => View(new Glass());
 
+        [HttpGet]
+        public async Task<IActionResult> EditGlass(int id)
+        {
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+
+            var glass = await _context.Glasses.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
+            if (glass is null)
+            {
+                return NotFound();
+            }
+
+            return View(glass);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditGlass(Glass model, IFormFile? imageFile)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var glass = await _context.Glasses.FirstOrDefaultAsync(g => g.Id == model.Id);
+            if (glass is null)
+            {
+                return NotFound();
+            }
+
+            if (!ImageUploadHelper.IsValidImageFile(imageFile, out var fileValidationError))
+            {
+                ModelState.AddModelError("imageFile", fileValidationError);
+                return View(model);
+            }
+
+            glass.Name = model.Name.Trim();
+            glass.Brand = model.Brand.Trim();
+            glass.Price = model.Price;
+            glass.Description = model.Description?.Trim();
+
+            if (imageFile is not null)
+            {
+                glass.ImageBase64 = await ImageUploadHelper.ConvertToBase64Async(imageFile);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ManageGlasses));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteGlass(int id)
+        {
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+
+            var glass = await _context.Glasses.FirstOrDefaultAsync(g => g.Id == id);
+            if (glass is null)
+            {
+                return NotFound();
+            }
+
+            _context.Glasses.Remove(glass);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ManageGlasses));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddGlass(Glass glass, IFormFile? imageFile)

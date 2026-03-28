@@ -1,0 +1,64 @@
+@model EyeClinicApp.Models.Glass
+@{
+    ViewData["Title"] = "Edit Glass";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Edit Glass</h1>
+    <a asp-action="ManageGlasses" class="btn btn-outline-secondary">Back to Manage Glasses</a>
+</div>
+
+<form asp-action="EditGlass" method="post" enctype="multipart/form-data" class="card p-4 shadow-sm">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="ImageBase64" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Brand" class="form-label"></label>
+        <input asp-for="Brand" class="form-control" />
+        <span asp-validation-for="Brand" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ImageBase64))
+    {
+        <div class="mb-3">
+            <label class="form-label d-block">Current Image</label>
+            <img src="@Model.ImageBase64" alt="@Model.Name" class="img-thumbnail" style="max-height: 160px;" />
+        </div>
+    }
+
+    <div class="mb-3">
+        <label for="imageFile" class="form-label">Replace Image (optional)</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+        <span class="text-danger" data-valmsg-for="imageFile" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a asp-action="ManageGlasses" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
