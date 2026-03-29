@@ -50,18 +50,20 @@ namespace EyeClinicApp.Data.Seed
                 await userManager.AddToRoleAsync(adminUser, AdminRoleName);
             }
 
-            if (!await context.TimeSlots.AnyAsync())
+            var requiredSlots = GenerateStandardSlots().ToList();
+            var existingSlots = await context.TimeSlots.ToListAsync();
+            foreach (var required in requiredSlots)
             {
-                await context.TimeSlots.AddRangeAsync(new[]
+                var existing = existingSlots.FirstOrDefault(s => s.StartTime == required.StartTime && s.EndTime == required.EndTime);
+                if (existing is null)
                 {
-                    new TimeSlot { StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(9, 30, 0), Label = "09:00 AM - 09:30 AM" },
-                    new TimeSlot { StartTime = new TimeSpan(9, 30, 0), EndTime = new TimeSpan(10, 0, 0), Label = "09:30 AM - 10:00 AM" },
-                    new TimeSlot { StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(10, 30, 0), Label = "10:00 AM - 10:30 AM" },
-                    new TimeSlot { StartTime = new TimeSpan(10, 30, 0), EndTime = new TimeSpan(11, 0, 0), Label = "10:30 AM - 11:00 AM" },
-                    new TimeSlot { StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(11, 30, 0), Label = "11:00 AM - 11:30 AM" },
-                    new TimeSlot { StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(14, 30, 0), Label = "02:00 PM - 02:30 PM" },
-                    new TimeSlot { StartTime = new TimeSpan(14, 30, 0), EndTime = new TimeSpan(15, 0, 0), Label = "02:30 PM - 03:00 PM" }
-                });
+                    await context.TimeSlots.AddAsync(required);
+                    continue;
+                }
+
+                existing.Shift = required.Shift;
+                existing.IsActive = true;
+                existing.Label = required.Label;
             }
 
             if (!await context.Glasses.AnyAsync())
@@ -235,10 +237,16 @@ BEGIN
         [Id] INT IDENTITY(1,1) NOT NULL,
         [StartTime] time NOT NULL,
         [EndTime] time NOT NULL,
+        [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning'),
         [IsActive] bit NOT NULL CONSTRAINT [DF_TimeSlots_IsActive] DEFAULT(1),
         [Label] nvarchar(100) NULL,
         CONSTRAINT [PK_TimeSlots] PRIMARY KEY ([Id])
     );
+END
+
+IF COL_LENGTH('dbo.TimeSlots', 'Shift') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[TimeSlots] ADD [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning');
 END
 
 IF COL_LENGTH('dbo.Appointments', 'TimeSlotId') IS NULL
@@ -373,6 +381,26 @@ BEGIN
     END
 END
 ");
+        }
+
+        private static IEnumerable<TimeSlot> GenerateStandardSlots()
+        {
+            var start = new TimeSpan(9, 0, 0);
+            var end = new TimeSpan(20, 0, 0);
+            var slotDuration = TimeSpan.FromMinutes(30);
+
+            for (var current = start; current < end; current += slotDuration)
+            {
+                var next = current + slotDuration;
+                yield return new TimeSlot
+                {
+                    StartTime = current,
+                    EndTime = next,
+                    Shift = TimeSlot.ResolveShift(current),
+                    IsActive = true,
+                    Label = $"{DateTime.Today.Add(current):hh:mm tt} - {DateTime.Today.Add(next):hh:mm tt}"
+                };
+            }
         }
     }
 }

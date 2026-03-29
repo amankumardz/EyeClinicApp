@@ -475,3 +475,97 @@ h5 {
 .review-card {
     padding: 1.15rem;
 }
+
+.booking-shell {
+    max-width: 1100px;
+    margin-inline: auto;
+}
+
+.date-tabs-wrap {
+    overflow-x: auto;
+    padding-bottom: .25rem;
+}
+
+.date-tabs {
+    display: flex;
+    gap: .55rem;
+    min-width: max-content;
+}
+
+.date-tab {
+    border: 1px solid #dbe7ef;
+    background: #fff;
+    color: #1f2937;
+    border-radius: 999px;
+    padding: .55rem 1rem;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+
+.date-tab:hover:not(:disabled) {
+    border-color: var(--brand);
+    transform: translateY(-1px);
+}
+
+.date-tab.active {
+    background: #e6fffb;
+    border-color: var(--brand);
+    color: #06695b;
+}
+
+.date-tab:disabled {
+    opacity: .45;
+}
+
+.shift-card {
+    background: #fff;
+    border: 1px solid #e9eff6;
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.slot-item.status-booked .slot-pill {
+    background: #f3f5f8;
+    border-color: #e2e8f0;
+    color: #8a94a6;
+    cursor: not-allowed;
+}
+
+.slot-item.status-booked .slot-status {
+    color: #c0392b;
+}
+
+.slot-item.status-available .slot-pill {
+    border-color: #bde5cd;
+    background: #f0fff6;
+}
+
+.slot-item .slot-time {
+    display: block;
+    font-weight: 600;
+}
+
+.slot-item .slot-status {
+    font-size: .72rem;
+    color: #1d7f45;
+}
+
+.slot-item input:checked + .slot-pill {
+    background: #e9f5ff;
+    border-color: #2684ff;
+    color: #0d4b8f;
+}
+
+.empty-shift {
+    color: #79839a;
+    font-size: .9rem;
+}
+
+.selection-summary {
+    background: #f7fbff;
+    border-radius: 12px;
+    border: 1px solid #e1ecf7;
+    padding: .8rem;
+    display: grid;
+    gap: .35rem;
+}
