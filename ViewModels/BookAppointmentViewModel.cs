@@ -1,5 +1,3 @@
-using EyeClinicApp.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace EyeClinicApp.ViewModels
@@ -22,7 +20,7 @@ namespace EyeClinicApp.ViewModels
         [Range(0, 130)]
         public int? Age { get; set; }
 
-        [Display(Name = "Reason for Visit")]
+        [Display(Name = "Reason")]
         [MaxLength(1000)]
         public string? ReasonForVisit { get; set; }
 
@@ -31,13 +29,44 @@ namespace EyeClinicApp.ViewModels
 
         [Required]
         [DataType(DataType.Date)]
-        [Display(Name = "Appointment Date")]
-        public DateTime AppointmentDate { get; set; } = DateTime.UtcNow.Date.AddDays(1);
+        public DateTime AppointmentDate { get; set; }
 
         [Required]
-        [Display(Name = "Time Slot")]
-        public int? TimeSlotId { get; set; }
+        public int TimeSlotId { get; set; }
 
-        public IReadOnlyCollection<SelectListItem> AvailableSlots { get; set; } = [];
+        public string SelectedTimeSlotLabel { get; set; } = string.Empty;
+    }
+
+    public class BookAppointmentSlotSelectionViewModel
+    {
+        [DataType(DataType.Date)]
+        public DateTime SelectedDate { get; set; }
+
+        public int? SelectedSlotId { get; set; }
+
+        public IReadOnlyCollection<DateTabViewModel> DateTabs { get; set; } = [];
+
+        public IReadOnlyCollection<ShiftSlotGroupViewModel> ShiftGroups { get; set; } = [];
+    }
+
+    public class DateTabViewModel
+    {
+        public DateTime Date { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public bool IsSelected { get; set; }
+        public bool IsDisabled { get; set; }
+    }
+
+    public class ShiftSlotGroupViewModel
+    {
+        public string Shift { get; set; } = string.Empty;
+        public IReadOnlyCollection<SlotItemViewModel> Slots { get; set; } = [];
+    }
+
+    public class SlotItemViewModel
+    {
+        public int Id { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public bool IsBooked { get; set; }
     }
 }
