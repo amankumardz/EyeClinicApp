@@ -23,6 +23,10 @@ namespace EyeClinicApp.Data
                 .HasIndex(t => new { t.StartTime, t.EndTime })
                 .IsUnique();
 
+            builder.Entity<TimeSlot>()
+                .Property(t => t.Shift)
+                .HasMaxLength(20);
+
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.AppointmentDate, a.TimeSlotId })
                 .IsUnique()

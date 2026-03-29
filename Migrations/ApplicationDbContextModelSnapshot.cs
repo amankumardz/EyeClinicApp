@@ -308,6 +308,11 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Shift")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time");
 
