@@ -20,10 +20,12 @@
         <div class="alert alert-danger border-0 shadow-sm">@error</div>
     }
 
-    <form asp-action="Book" method="post" id="slotSelectionForm" class="booking-card">
+    <form asp-action="SelectSlot" method="post" id="slotSelectionForm" class="booking-card">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
 
-        <input asp-for="SelectedDate" type="hidden" id="selectedDateInput" />
+        <input type="hidden" name="SelectedDate" id="SelectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+        <input type="hidden" name="TimeSlotId" id="TimeSlotId" value="@(Model.SelectedSlotId?.ToString() ?? string.Empty)" />
+        <div class="text-danger small mb-2" id="clientSelectionError" hidden>Please select a date and slot to continue.</div>
 
         <div class="date-tabs-wrap">
             <div class="date-tabs" id="dateTabs">
@@ -57,14 +59,16 @@
                                 var isSelected = Model.SelectedSlotId == slot.Id;
                                 var stateClass = slot.IsBooked ? "booked" : isSelected ? "selected" : "available";
                                 <label class="slot-item status-@stateClass">
-                                    <input type="radio"
-                                           asp-for="SelectedSlotId"
-                                           value="@slot.Id"
-                                           disabled="@slot.IsBooked" />
+                                    <button type="button"
+                                            class="slot-select-btn"
+                                            data-slot-id="@slot.Id"
+                                            disabled="@slot.IsBooked"
+                                            aria-pressed="@(isSelected.ToString().ToLowerInvariant())">
                                     <span class="slot-pill">
                                         <span class="slot-time">@slot.Label</span>
                                         <small class="slot-status">@((slot.IsBooked) ? "Booked" : "Available")</small>
                                     </span>
+                                    </button>
                                 </label>
                             }
                         </div>
@@ -82,6 +86,7 @@
             <div class="alert alert-warning mb-2">No slots available for the selected date.</div>
         }
 
+        <span asp-validation-for="SelectedDate" class="text-danger small d-block mb-1"></span>
         <span asp-validation-for="SelectedSlotId" class="text-danger small d-block mb-2"></span>
 
         <div class="d-flex gap-2">
@@ -101,22 +106,63 @@
     <script>
         (() => {
             const tabs = document.querySelectorAll('.date-tab[data-date]');
-            const dateInput = document.getElementById('selectedDateInput');
+            const slotButtons = document.querySelectorAll('.slot-select-btn[data-slot-id]');
+            const dateInput = document.getElementById('SelectedDate');
+            const slotInput = document.getElementById('TimeSlotId');
             const loading = document.getElementById('loadingState');
             const continueBtn = document.getElementById('continueBtn');
             const form = document.getElementById('slotSelectionForm');
+            const clientSelectionError = document.getElementById('clientSelectionError');
+
+            const setActiveSlot = (slotId) => {
+                slotButtons.forEach((button) => {
+                    const isSelected = button.dataset.slotId === slotId;
+                    button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                    button.closest('.slot-item')?.classList.toggle('status-selected', isSelected);
+                    if (!isSelected && !button.disabled) {
+                        button.closest('.slot-item')?.classList.remove('status-available');
+                        button.closest('.slot-item')?.classList.add('status-available');
+                    }
+                });
+            };
 
             tabs.forEach((tab) => {
                 tab.addEventListener('click', () => {
                     if (!dateInput) return;
                     dateInput.value = tab.dataset.date;
+                    if (slotInput) slotInput.value = '';
                     if (loading) loading.hidden = false;
                     window.location.href = `@Url.Action("Book", "Appointment")?date=${tab.dataset.date}`;
                 });
             });
 
+            slotButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (!slotInput || button.disabled) return;
+                    slotInput.value = button.dataset.slotId;
+                    setActiveSlot(button.dataset.slotId);
+                    if (clientSelectionError) {
+                        clientSelectionError.hidden = true;
+                    }
+                });
+            });
+
+            if (slotInput && slotInput.value) {
+                setActiveSlot(slotInput.value);
+            }
+
             if (form) {
-                form.addEventListener('submit', () => {
+                form.addEventListener('submit', (event) => {
+                    const hasDate = !!dateInput?.value;
+                    const hasSlot = !!slotInput?.value;
+                    if (!hasDate || !hasSlot) {
+                        event.preventDefault();
+                        if (clientSelectionError) {
+                            clientSelectionError.hidden = false;
+                        }
+                        return;
+                    }
+
                     if (continueBtn) continueBtn.disabled = true;
                     if (loading) loading.hidden = false;
                 });
