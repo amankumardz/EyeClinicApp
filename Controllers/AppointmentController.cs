@@ -11,12 +11,14 @@ namespace EyeClinicApp.Controllers
     public class AppointmentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AppointmentController> _logger;
         private const string SelectedDateTempKey = "Booking.SelectedDate";
         private const string SelectedSlotTempKey = "Booking.SelectedSlotId";
 
-        public AppointmentController(ApplicationDbContext context)
+        public AppointmentController(ApplicationDbContext context, ILogger<AppointmentController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -31,42 +33,60 @@ namespace EyeClinicApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Book(BookAppointmentSlotSelectionViewModel model)
         {
-            model.SelectedDate = GetSafeDate(model.SelectedDate);
+            return await SelectSlot(model.SelectedDate, model.SelectedSlotId ?? 0);
+        }
 
-            if (!model.SelectedSlotId.HasValue)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SelectSlot(DateTime SelectedDate, int TimeSlotId)
+        {
+            _logger.LogInformation("SelectSlot POST received SelectedDate={SelectedDate}, TimeSlotId={TimeSlotId}", SelectedDate, TimeSlotId);
+
+            var safeDate = SelectedDate == default ? DateTime.UtcNow.Date : GetSafeDate(SelectedDate);
+
+            if (SelectedDate == default)
             {
+                ModelState.AddModelError(nameof(SelectedDate), "Please select a date to continue.");
+                ModelState.AddModelError(nameof(BookAppointmentSlotSelectionViewModel.SelectedDate), "Please select a date to continue.");
+            }
+
+            if (TimeSlotId == 0)
+            {
+                ModelState.AddModelError(nameof(TimeSlotId), "Please select one available slot.");
                 ModelState.AddModelError(nameof(BookAppointmentSlotSelectionViewModel.SelectedSlotId), "Please select one available slot.");
             }
 
             if (!ModelState.IsValid)
             {
-                var retryModel = await BuildSlotSelectionViewModelAsync(model.SelectedDate, model.SelectedSlotId);
-                return View(retryModel);
+                var retryModel = await BuildSlotSelectionViewModelAsync(safeDate, TimeSlotId == 0 ? null : TimeSlotId);
+                return View("Book", retryModel);
             }
 
-            var slot = await _context.TimeSlots.AsNoTracking().FirstOrDefaultAsync(t => t.Id == model.SelectedSlotId.Value && t.IsActive);
+            var slot = await _context.TimeSlots.AsNoTracking().FirstOrDefaultAsync(t => t.Id == TimeSlotId && t.IsActive);
             if (slot is null)
             {
+                ModelState.AddModelError(nameof(TimeSlotId), "Selected slot is invalid.");
                 ModelState.AddModelError(nameof(BookAppointmentSlotSelectionViewModel.SelectedSlotId), "Selected slot is invalid.");
-                var retryModel = await BuildSlotSelectionViewModelAsync(model.SelectedDate, model.SelectedSlotId);
-                return View(retryModel);
+                var retryModel = await BuildSlotSelectionViewModelAsync(safeDate, TimeSlotId);
+                return View("Book", retryModel);
             }
 
             var alreadyBooked = await _context.Appointments.AsNoTracking().AnyAsync(a =>
-                a.AppointmentDate == model.SelectedDate &&
-                a.TimeSlotId == model.SelectedSlotId.Value &&
+                a.AppointmentDate == safeDate &&
+                a.TimeSlotId == TimeSlotId &&
                 a.Status != AppointmentStatus.Rejected &&
                 a.Status != AppointmentStatus.Completed);
 
             if (alreadyBooked)
             {
+                ModelState.AddModelError(nameof(TimeSlotId), "This slot was just booked. Please select another slot.");
                 ModelState.AddModelError(nameof(BookAppointmentSlotSelectionViewModel.SelectedSlotId), "This slot was just booked. Please select another slot.");
-                var retryModel = await BuildSlotSelectionViewModelAsync(model.SelectedDate, null);
-                return View(retryModel);
+                var retryModel = await BuildSlotSelectionViewModelAsync(safeDate, null);
+                return View("Book", retryModel);
             }
 
-            TempData[SelectedDateTempKey] = model.SelectedDate.ToString("yyyy-MM-dd");
-            TempData[SelectedSlotTempKey] = model.SelectedSlotId.Value.ToString();
+            TempData[SelectedDateTempKey] = safeDate.ToString("yyyy-MM-dd");
+            TempData[SelectedSlotTempKey] = TimeSlotId.ToString();
 
             return RedirectToAction(nameof(Confirm));
         }
