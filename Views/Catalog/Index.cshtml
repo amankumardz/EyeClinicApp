@@ -29,8 +29,8 @@ else
         @foreach (var item in Model)
         {
             <div class="col-sm-6 col-lg-4 col-xl-3 fade-in">
-                <article class="product-card">
-                    <div class="product-media">
+                <article class="product-card product-card--interactive">
+                    <div class="product-media product-media--interactive">
                         @if (!string.IsNullOrWhiteSpace(item.ImageBase64))
                         {
                             <img src="data:image/jpeg;base64,@item.ImageBase64" alt="@item.Name" />
@@ -39,24 +39,50 @@ else
                         {
                             <img src="~/images/placeholders/product.svg" alt="No image available" />
                         }
+
+                        <div class="product-overlay">
+                            @if (User.Identity?.IsAuthenticated ?? false)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="w-100">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="glassId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-primary add-to-cart-btn w-100">
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
+                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                </a>
+                            }
+                        </div>
                     </div>
                     <div class="p-3 p-lg-4 d-flex flex-column h-100">
                         <p class="text-uppercase text-secondary small mb-1">@item.Brand</p>
                         <h5 class="mb-2">@item.Name</h5>
                         <p class="text-secondary small flex-grow-1">@item.Description</p>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
+
+                        <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
                             <span class="price-tag">@item.Price.ToString("C")</span>
+                            <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft btn-sm px-3 view-details-btn" aria-label="View details for @item.Name">View Details</a>
+                        </div>
+
+                        <div class="add-to-cart-mobile mt-3">
                             @if (User.Identity?.IsAuthenticated ?? false)
                             {
-                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-grid">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="glassId" value="@item.Id" />
-                                    <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+                                    <button type="submit" class="btn btn-primary add-to-cart-btn">
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                    </button>
                                 </form>
                             }
                             else
                             {
-                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-sm px-3" title="Sign in to add this item to your cart">
+                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
                                     <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                 </a>
                             }
