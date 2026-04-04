@@ -1,31 +1,110 @@
 @model IEnumerable<EyeClinicApp.Models.Appointment>
+@using EyeClinicApp.Models
 @{
     ViewData["Title"] = "My Appointments";
 }
 
-<h1 class="mb-4">My Appointments</h1>
+<div class="appointments-page">
+    <h1 class="mb-4">My Appointments</h1>
 
-@if (Model is null || !Model.Any())
-{
-    <div class="alert alert-info">You do not have any appointments yet.</div>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var appointment in Model)
-        {
-            <tr>
-                <td>@appointment.AppointmentDate.ToString("f")</td>
-                <td>@appointment.Status</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
+    @if (Model is null || !Model.Any())
+    {
+        <div class="alert alert-info">You do not have any appointments yet.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var appointment in Model)
+            {
+                var statusClass = appointment.Status switch
+                {
+                    AppointmentStatus.Pending => "status-pending",
+                    AppointmentStatus.Approved => "status-approved",
+                    AppointmentStatus.Rejected => "status-rejected",
+                    AppointmentStatus.Completed => "status-completed",
+                    _ => "status-default"
+                };
+
+                <div class="col-12">
+                    <article class="appointment-card">
+                        <section class="card-section">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                <h2 class="h5 m-0">Booking Info</h2>
+                                <span class="status-badge @statusClass">@appointment.Status</span>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-4"><strong>Patient Name:</strong> @appointment.Name</div>
+                                <div class="col-md-4"><strong>Appointment Date:</strong> @appointment.AppointmentDate.ToString("dd MMM yyyy")</div>
+                                <div class="col-md-4"><strong>Time Slot:</strong> @(appointment.TimeSlot?.GetDisplayLabel() ?? "Not assigned")</div>
+                            </div>
+                        </section>
+
+                        <section class="card-section">
+                            <h3 class="h6 mb-2">Clinic Details</h3>
+                            <p class="mb-1"><strong>Noida Eye and Medical Centre</strong></p>
+                            <p class="mb-1">Major Uday Apartments, 1023, 1021, Mall Road,<br />Sector 29, Noida, Uttar Pradesh 201303</p>
+                            <p class="mb-1"><strong>Contact:</strong> +91-XXXXXXXXXX</p>
+                            <p class="mb-0"><strong>Email:</strong> clinic@example.com</p>
+                        </section>
+
+                        <section class="card-section">
+                            <h3 class="h6 mb-2">Map</h3>
+                            <iframe
+                                src="https://www.google.com/maps?q=Noida%20Eye%20and%20Medical%20Centre%2C%20Sector%2029%2C%20Noida&output=embed"
+                                width="100%"
+                                height="200"
+                                style="border:0; border-radius:10px;"
+                                loading="lazy">
+                            </iframe>
+                        </section>
+
+                        <section class="d-flex flex-wrap gap-2">
+                            <a href="https://www.google.com/maps/search/?api=1&query=Noida+Eye+and+Medical+Centre+Sector+29+Noida"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-primary">
+                                Get Directions
+                            </a>
+                            <a href="tel:+919876543210" class="btn btn-success">Call Clinic</a>
+                        </section>
+                    </article>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .appointments-page .appointment-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .appointments-page .card-section {
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: .75rem;
+    }
+
+    .appointments-page .card-section:last-of-type {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .appointments-page .status-badge {
+        border-radius: 999px;
+        padding: .3rem .75rem;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+    .appointments-page .status-pending { background-color: #fef3c7; color: #92400e; }
+    .appointments-page .status-approved { background-color: #dcfce7; color: #166534; }
+    .appointments-page .status-rejected { background-color: #fee2e2; color: #991b1b; }
+    .appointments-page .status-completed { background-color: #dbeafe; color: #1d4ed8; }
+    .appointments-page .status-default { background-color: #e2e8f0; color: #334155; }
+</style>
