@@ -536,8 +536,33 @@ h5 {
 }
 
 .slot-item.status-available .slot-pill {
-    border-color: #bde5cd;
-    background: #f0fff6;
+    border-color: #cae7d4;
+    background: linear-gradient(180deg, #f8fffb 0%, #effcf5 100%);
+}
+
+.slot-item.status-selected .slot-pill {
+    background: linear-gradient(180deg, #ecf7ff 0%, #dff0ff 100%);
+    border-color: #4d9eff;
+    box-shadow: 0 10px 18px rgba(77, 158, 255, 0.2);
+    color: #0d4b8f;
+}
+
+.slot-select-btn {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    padding: 0;
+}
+
+.slot-select-btn:disabled {
+    cursor: not-allowed;
+}
+
+.slot-select-btn:not(:disabled):hover .slot-pill {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
 }
 
 .slot-item .slot-time {
@@ -548,12 +573,6 @@ h5 {
 .slot-item .slot-status {
     font-size: .72rem;
     color: #1d7f45;
-}
-
-.slot-item input:checked + .slot-pill {
-    background: #e9f5ff;
-    border-color: #2684ff;
-    color: #0d4b8f;
 }
 
 .empty-shift {

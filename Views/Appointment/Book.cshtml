@@ -20,7 +20,7 @@
         <div class="alert alert-danger border-0 shadow-sm">@error</div>
     }
 
-    <form asp-action="SelectSlot" method="post" id="slotSelectionForm" class="booking-card">
+    <form asp-controller="Appointment" asp-action="SelectSlot" method="post" id="slotSelectionForm" class="booking-card">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
 
         <input type="hidden" name="SelectedDate" id="SelectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
@@ -117,11 +117,12 @@
             const setActiveSlot = (slotId) => {
                 slotButtons.forEach((button) => {
                     const isSelected = button.dataset.slotId === slotId;
+                    const slotItem = button.closest('.slot-item');
                     button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-                    button.closest('.slot-item')?.classList.toggle('status-selected', isSelected);
-                    if (!isSelected && !button.disabled) {
-                        button.closest('.slot-item')?.classList.remove('status-available');
-                        button.closest('.slot-item')?.classList.add('status-available');
+                    if (!slotItem) return;
+                    slotItem.classList.toggle('status-selected', isSelected);
+                    if (!button.disabled) {
+                        slotItem.classList.toggle('status-available', !isSelected);
                     }
                 });
             };
@@ -153,6 +154,16 @@
 
             if (form) {
                 form.addEventListener('submit', (event) => {
+                    if (dateInput && !dateInput.value) {
+                        const activeDate = document.querySelector('.date-tab.active[data-date]');
+                        if (activeDate) dateInput.value = activeDate.dataset.date;
+                    }
+
+                    if (slotInput && !slotInput.value) {
+                        const pressedSlot = document.querySelector('.slot-select-btn[aria-pressed="true"][data-slot-id]');
+                        if (pressedSlot) slotInput.value = pressedSlot.dataset.slotId;
+                    }
+
                     const hasDate = !!dateInput?.value;
                     const hasSlot = !!slotInput?.value;
                     if (!hasDate || !hasSlot) {
