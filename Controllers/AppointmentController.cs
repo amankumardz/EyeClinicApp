@@ -1,6 +1,7 @@
 using EyeClinicApp.Data;
 using EyeClinicApp.Models;
 using EyeClinicApp.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -22,6 +23,7 @@ namespace EyeClinicApp.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Book(DateTime? date)
         {
             var selectedDate = GetSafeDate(date);
@@ -30,13 +32,16 @@ namespace EyeClinicApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Book(BookAppointmentSlotSelectionViewModel model)
         {
+            _logger.LogInformation("Book POST fallback received SelectedDate={SelectedDate}, SelectedSlotId={SelectedSlotId}", model.SelectedDate, model.SelectedSlotId);
             return await SelectSlot(model.SelectedDate, model.SelectedSlotId ?? 0);
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SelectSlot(DateTime SelectedDate, int TimeSlotId)
         {
@@ -88,16 +93,34 @@ namespace EyeClinicApp.Controllers
             TempData[SelectedDateTempKey] = safeDate.ToString("yyyy-MM-dd");
             TempData[SelectedSlotTempKey] = TimeSlotId.ToString();
 
-            return RedirectToAction(nameof(Confirm));
+            return RedirectToAction(nameof(Confirm), new
+            {
+                selectedDate = safeDate.ToString("yyyy-MM-dd"),
+                timeSlotId = TimeSlotId
+            });
         }
 
         [HttpGet]
-        public async Task<IActionResult> Confirm()
+        [Authorize]
+        public async Task<IActionResult> Confirm(DateTime? selectedDate, int? timeSlotId)
         {
-            var selectedDate = ReadSelectedDateFromTempData();
-            var selectedSlotId = ReadSelectedSlotFromTempData();
+            var selectedDateFromQuery = selectedDate.HasValue ? GetSafeDate(selectedDate) : null;
+            var selectedDateFromTempData = ReadSelectedDateFromTempData();
+            var selectedDateValue = selectedDateFromQuery ?? selectedDateFromTempData;
 
-            if (!selectedDate.HasValue || !selectedSlotId.HasValue)
+            var selectedSlotFromTempData = ReadSelectedSlotFromTempData();
+            var selectedSlotId = timeSlotId ?? selectedSlotFromTempData;
+
+            _logger.LogInformation(
+                "Confirm GET resolved SelectedDate(query={QueryDate}, temp={TempDate}, final={FinalDate}), TimeSlotId(query={QuerySlot}, temp={TempSlot}, final={FinalSlot})",
+                selectedDateFromQuery,
+                selectedDateFromTempData,
+                selectedDateValue,
+                timeSlotId,
+                selectedSlotFromTempData,
+                selectedSlotId);
+
+            if (!selectedDateValue.HasValue || !selectedSlotId.HasValue)
             {
                 TempData["Error"] = "Please select a date and slot to continue.";
                 return RedirectToAction(nameof(Book));
@@ -107,14 +130,14 @@ namespace EyeClinicApp.Controllers
             if (slot is null)
             {
                 TempData["Error"] = "Selected slot is no longer available.";
-                return RedirectToAction(nameof(Book), new { date = selectedDate.Value.ToString("yyyy-MM-dd") });
+                return RedirectToAction(nameof(Book), new { date = selectedDateValue.Value.ToString("yyyy-MM-dd") });
             }
 
-            KeepSelectionInTempData(selectedDate.Value, selectedSlotId.Value);
+            KeepSelectionInTempData(selectedDateValue.Value, selectedSlotId.Value);
 
             var model = new BookAppointmentViewModel
             {
-                AppointmentDate = selectedDate.Value,
+                AppointmentDate = selectedDateValue.Value,
                 TimeSlotId = slot.Id,
                 SelectedTimeSlotLabel = slot.GetDisplayLabel()
             };
@@ -123,6 +146,7 @@ namespace EyeClinicApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(BookAppointmentViewModel model)
         {
@@ -296,7 +320,7 @@ namespace EyeClinicApp.Controllers
 
         private DateTime? ReadSelectedDateFromTempData()
         {
-            if (TempData[SelectedDateTempKey] is string rawDate && DateTime.TryParse(rawDate, out var parsed))
+            if (TempData.Peek(SelectedDateTempKey) is string rawDate && DateTime.TryParse(rawDate, out var parsed))
             {
                 return parsed.Date;
             }
@@ -306,7 +330,7 @@ namespace EyeClinicApp.Controllers
 
         private int? ReadSelectedSlotFromTempData()
         {
-            if (TempData[SelectedSlotTempKey] is string rawSlot && int.TryParse(rawSlot, out var slotId))
+            if (TempData.Peek(SelectedSlotTempKey) is string rawSlot && int.TryParse(rawSlot, out var slotId))
             {
                 return slotId;
             }
