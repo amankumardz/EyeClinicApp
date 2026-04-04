@@ -243,6 +243,30 @@ namespace EyeClinicApp.Controllers
             return RedirectToAction(nameof(Book), new { date = model.AppointmentDate.ToString("yyyy-MM-dd") });
         }
 
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> MyAppointments()
+        {
+            var signedInEmail = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(signedInEmail))
+            {
+                return View(Enumerable.Empty<Appointment>());
+            }
+
+            var normalizedEmail = signedInEmail.Trim().ToLowerInvariant();
+
+            var appointments = await _context.Appointments
+                .AsNoTracking()
+                .Include(a => a.TimeSlot)
+                .Where(a => a.Email != null && a.Email.ToLower() == normalizedEmail)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenByDescending(a => a.CreatedAtUtc)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
         private async Task<BookAppointmentSlotSelectionViewModel> BuildSlotSelectionViewModelAsync(DateTime selectedDate, int? selectedSlotId)
         {
             var tabs = Enumerable.Range(0, 7)
