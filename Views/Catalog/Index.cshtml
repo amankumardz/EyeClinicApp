@@ -10,66 +10,20 @@
     <div class="alert alert-success">@cartMessage</div>
 }
 
-<section class="catalog-hero-banner fade-in mb-4">
-    <div>
-        <p class="promo-pill mb-2">TRENDING OFFERS</p>
-        <h1 class="mb-2">Eyewear that elevates your everyday look</h1>
-        <p class="mb-0">Starting ₹500 • Buy 1 Get 1 • Free blue-light lens upgrade on selected styles.</p>
-    </div>
-    <a asp-controller="Catalog" asp-action="Index" class="btn btn-light btn-sm px-3">Shop Deals</a>
-</section>
-
-<section class="mb-4">
+<section class="catalog-page mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <h2 class="section-title mb-0">Shop by Category</h2>
+        <h1 class="section-title mb-0">Eyewear Catalog</h1>
         @if (!string.IsNullOrWhiteSpace(selectedCategory))
         {
             <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft btn-sm">Clear Filter</a>
         }
     </div>
 
-    <div class="row g-3 g-lg-4">
-        <div class="col-12 col-md-4 fade-in">
-            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Men" class="category-tile @(selectedCategory == "Men" ? "active" : string.Empty)">
-                <img src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=80" alt="Men eyeglasses" />
-                <div class="category-tile__content">
-                    <h3>MEN</h3>
-                    <p class="mb-0">with FREE lenses</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-12 col-md-4 fade-in">
-            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Women" class="category-tile @(selectedCategory == "Women" ? "active" : string.Empty)">
-                <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80" alt="Women eyeglasses" />
-                <div class="category-tile__content">
-                    <h3>WOMEN</h3>
-                    <p class="mb-0">with FREE lenses</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-12 col-md-4 fade-in">
-            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Kids" class="category-tile @(selectedCategory == "Kids" ? "active" : string.Empty)">
-                <img src="https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?auto=format&fit=crop&w=900&q=80" alt="Kids eyeglasses" />
-                <div class="category-tile__content">
-                    <h3>KIDS</h3>
-                    <p class="mb-0">durable playful styles</p>
-                </div>
-            </a>
-        </div>
+    <div class="category-section">
+        <a asp-controller="Catalog" asp-action="Index" asp-route-category="Men" class="category-card @(selectedCategory == "Men" ? "active" : string.Empty)">Men</a>
+        <a asp-controller="Catalog" asp-action="Index" asp-route-category="Women" class="category-card @(selectedCategory == "Women" ? "active" : string.Empty)">Women</a>
+        <a asp-controller="Catalog" asp-action="Index" asp-route-category="Kids" class="category-card @(selectedCategory == "Kids" ? "active" : string.Empty)">Kids</a>
     </div>
-</section>
-
-<section class="catalog-banner-grid mb-4">
-    <article class="catalog-highlight-card">
-        <p class="small text-uppercase mb-1">Limited Time</p>
-        <h3 class="mb-1">Starting ₹500</h3>
-        <p class="mb-0">Lightweight frames with anti-glare lenses included.</p>
-    </article>
-    <article class="catalog-highlight-card dark">
-        <p class="small text-uppercase mb-1">Best Seller Deal</p>
-        <h3 class="mb-1">Buy 1 Get 1</h3>
-        <p class="mb-0">Pick any second frame from selected premium brands.</p>
-    </article>
 </section>
 
 <section>
