@@ -1,63 +1,245 @@
 @model EyeClinicApp.ViewModels.CheckoutViewModel
 @{
-    ViewData["Title"] = "Checkout";
+    ViewData["Title"] = "Secure Checkout";
 }
 
-<h1 class="mb-4">Checkout</h1>
+<div class="checkout-page">
+    <h1 class="checkout-title">Secure Checkout</h1>
 
-<form asp-action="Checkout" method="post">
-    @Html.AntiForgeryToken()
-    <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="card p-3 p-lg-4">
-                <h5>Shipping Details</h5>
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Checkout" method="post" id="checkoutForm">
+        @Html.AntiForgeryToken()
+        <input asp-for="PaymentMethod" type="hidden" id="selectedPaymentMethod" />
+        <input asp-for="IsUpiPaymentAcknowledged" type="hidden" id="isUpiPaymentAcknowledged" value="false" />
 
-                <div class="mb-3">
-                    <label asp-for="Name" class="form-label"></label>
-                    <input asp-for="Name" class="form-control" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
+        <div class="row g-4 checkout-grid">
+            <div class="col-lg-7">
+                <div class="checkout-card">
+                    <h5 class="checkout-section-title">Shipping Details</h5>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control checkout-input" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control checkout-input" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control checkout-input" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-1">
+                        <label asp-for="Address" class="form-label"></label>
+                        <textarea asp-for="Address" class="form-control checkout-input" rows="3"></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Phone" class="form-label"></label>
-                    <input asp-for="Phone" class="form-control" />
-                    <span asp-validation-for="Phone" class="text-danger"></span>
-                </div>
+                <div class="checkout-card mt-4">
+                    <h5 class="checkout-section-title">Choose Payment Method</h5>
+                    <span asp-validation-for="PaymentMethod" class="text-danger d-block mb-2"></span>
 
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
+                    <div class="payment-options">
+                        <button type="button" class="payment-option-card" data-method="UPI_QR">
+                            <span class="payment-icon">📱</span>
+                            <span class="payment-content">
+                                <strong>UPI QR</strong>
+                                <small>Scan & pay via any UPI app</small>
+                            </span>
+                        </button>
 
-                <div class="mb-3">
-                    <label asp-for="Address" class="form-label"></label>
-                    <textarea asp-for="Address" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="Address" class="text-danger"></span>
+                        <button type="button" class="payment-option-card" data-method="RAZORPAY">
+                            <span class="payment-icon">💳</span>
+                            <span class="payment-content">
+                                <strong>Razorpay</strong>
+                                <small>UPI, Card, NetBanking, Wallets</small>
+                            </span>
+                        </button>
+
+                        <button type="button" class="payment-option-card" data-method="COD">
+                            <span class="payment-icon">🚚</span>
+                            <span class="payment-content">
+                                <strong>Cash on Delivery</strong>
+                                <small>Pay when your order arrives</small>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div id="upiSection" class="upi-section d-none mt-3">
+                        <div class="upi-box">
+                            @if (!string.IsNullOrWhiteSpace(Model.UpiQrImageUrl))
+                            {
+                                <img src="@Model.UpiQrImageUrl" alt="UPI QR" class="upi-qr" />
+                            }
+                            else
+                            {
+                                <div class="upi-qr-placeholder">Add Payments:UpiQrImageUrl in appsettings</div>
+                            }
+
+                            <div class="upi-meta">
+                                <p class="mb-2"><strong>UPI ID:</strong> @(string.IsNullOrWhiteSpace(Model.UpiId) ? "merchant@upi" : Model.UpiId)</p>
+                                <button type="button" id="upiPaidBtn" class="btn btn-outline-success">I have paid</button>
+                                <small id="upiPaidText" class="d-none text-success fw-semibold">UPI payment acknowledged. You can place order now.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" id="razorpayPayBtn" class="btn btn-dark btn-lg d-none">Pay with Razorpay</button>
+                        <button type="submit" id="placeOrderBtn" class="btn btn-primary btn-lg">Place Order</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="checkout-card order-summary-sticky">
+                    <h5 class="checkout-section-title">Order Summary</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var item in Model.Items)
+                        {
+                            <li class="list-group-item d-flex justify-content-between px-0 order-summary-row">
+                                <span>@item.Name <small class="text-muted">x @item.Quantity</small></span>
+                                <span>@item.LineTotal.ToString("C")</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="order-total-wrap">
+                        <span>Total Amount</span>
+                        <strong>@Model.Total.ToString("C")</strong>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-5">
-            <div class="card p-3 p-lg-4">
-                <h5>Order Summary</h5>
-                <ul class="list-group list-group-flush mb-3">
-                    @foreach (var item in Model.Items)
-                    {
-                        <li class="list-group-item d-flex justify-content-between px-0">
-                            <span>@item.Name x @item.Quantity</span>
-                            <span>@item.LineTotal.ToString("C")</span>
-                        </li>
-                    }
-                </ul>
-                <h4>Total: @Model.Total.ToString("C")</h4>
-                <button type="submit" class="btn btn-primary w-100 mt-2">Place Order</button>
-            </div>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('checkoutForm');
+            const paymentMethodInput = document.getElementById('selectedPaymentMethod');
+            const upiAcknowledgedInput = document.getElementById('isUpiPaymentAcknowledged');
+            const paymentCards = document.querySelectorAll('.payment-option-card');
+            const upiSection = document.getElementById('upiSection');
+            const upiPaidBtn = document.getElementById('upiPaidBtn');
+            const upiPaidText = document.getElementById('upiPaidText');
+            const razorpayBtn = document.getElementById('razorpayPayBtn');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+            const existingMethod = '@Model.PaymentMethod';
+            if (existingMethod) {
+                selectMethod(existingMethod);
+            }
+
+            paymentCards.forEach(card => {
+                card.addEventListener('click', () => selectMethod(card.dataset.method));
+            });
+
+            upiPaidBtn?.addEventListener('click', () => {
+                upiAcknowledgedInput.value = 'true';
+                upiPaidText.classList.remove('d-none');
+            });
+
+            razorpayBtn?.addEventListener('click', async () => {
+                if (paymentMethodInput.value !== 'RAZORPAY') {
+                    alert('Please choose Razorpay payment method first.');
+                    return;
+                }
+
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('@Url.Action("CreateRazorpayOrder", "Order")', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) {
+                        alert(result.error || 'Unable to start payment.');
+                        return;
+                    }
+
+                    const options = {
+                        key: result.key,
+                        amount: result.amount,
+                        currency: result.currency,
+                        name: 'Eye Clinic Store',
+                        description: 'Checkout Payment',
+                        order_id: result.razorpayOrderId,
+                        prefill: {
+                            name: result.customer.name,
+                            email: result.customer.email,
+                            contact: result.customer.contact
+                        },
+                        theme: { color: '#0d6efd' },
+                        handler: async function (paymentResult) {
+                            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                            const verifyResponse = await fetch('@Url.Action("VerifyRazorpayPayment", "Order")', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token
+                                },
+                                body: JSON.stringify({
+                                    orderId: result.internalOrderId,
+                                    razorpayPaymentId: paymentResult.razorpay_payment_id,
+                                    razorpayOrderId: paymentResult.razorpay_order_id,
+                                    razorpaySignature: paymentResult.razorpay_signature
+                                })
+                            });
+
+                            const verifyResult = await verifyResponse.json();
+                            if (!verifyResponse.ok || !verifyResult.success) {
+                                alert(verifyResult.error || 'Payment verification failed.');
+                                return;
+                            }
+
+                            window.location.href = verifyResult.redirectUrl;
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                alert('Payment cancelled. You can retry Razorpay or choose another method.');
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } catch {
+                    alert('Something went wrong while processing payment. Please try again.');
+                }
+            });
+
+            function selectMethod(method) {
+                paymentMethodInput.value = method;
+
+                paymentCards.forEach(card => {
+                    card.classList.toggle('selected', card.dataset.method === method);
+                });
+
+                const isUpi = method === 'UPI_QR';
+                const isRazorpay = method === 'RAZORPAY';
+
+                upiSection.classList.toggle('d-none', !isUpi);
+                razorpayBtn.classList.toggle('d-none', !isRazorpay);
+                placeOrderBtn.classList.toggle('d-none', isRazorpay);
+
+                if (!isUpi) {
+                    upiAcknowledgedInput.value = 'false';
+                    upiPaidText.classList.add('d-none');
+                }
+            }
+        })();
+    </script>
 }
