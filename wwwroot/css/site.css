@@ -178,6 +178,99 @@ h5 {
     margin-bottom: 1.5rem;
 }
 
+.catalog-hero-banner {
+    background: linear-gradient(120deg, #042a38, #0b7f91 65%, #13b5b5);
+    border-radius: 22px;
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+}
+
+.promo-pill {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.category-tile {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    display: block;
+    min-height: 240px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #edf3f6;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.category-tile img {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.category-tile__content {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 1rem;
+    color: #fff;
+    background: linear-gradient(to top, rgba(4, 13, 18, 0.84), rgba(4, 13, 18, 0.05));
+}
+
+.category-tile__content h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.2rem;
+    font-weight: 700;
+}
+
+.category-tile:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.category-tile:hover img {
+    transform: scale(1.08);
+}
+
+.category-tile.active {
+    outline: 3px solid rgba(0, 191, 166, 0.7);
+}
+
+.catalog-banner-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.catalog-highlight-card {
+    background: #ecfffc;
+    border-radius: 16px;
+    border: 1px solid #cbeee8;
+    padding: 1.1rem 1.25rem;
+}
+
+.catalog-highlight-card.dark {
+    background: #10262f;
+    border-color: #10262f;
+    color: #fff;
+}
+
+.active-filter {
+    border-color: var(--brand) !important;
+    background: var(--brand-soft) !important;
+    color: var(--brand-dark) !important;
+}
+
 .product-card {
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -229,6 +322,25 @@ h5 {
     transform: scale(1.07);
 }
 
+.lenskart-card .product-overlay {
+    padding: 0.95rem;
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    color: #ef4444;
+    z-index: 2;
+}
+
 .add-to-cart-btn {
     border-radius: 20px;
     padding: 10px 20px;
@@ -244,12 +356,23 @@ h5 {
 }
 
 @media (max-width: 991.98px) {
+    .catalog-hero-banner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .product-overlay {
         display: none;
     }
 
     .add-to-cart-mobile {
         display: block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .catalog-banner-grid {
+        grid-template-columns: 1fr;
     }
 }
 

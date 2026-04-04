@@ -14,6 +14,7 @@ namespace EyeClinicApp.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
+        private static readonly string[] GlassCategories = ["Men", "Women", "Kids"];
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -40,7 +41,11 @@ namespace EyeClinicApp.Controllers
             return View(glasses);
         }
 
-        public IActionResult AddGlass() => View(new Glass());
+        public IActionResult AddGlass()
+        {
+            ViewBag.GlassCategories = GlassCategories;
+            return View(new Glass());
+        }
 
         [HttpGet]
         public async Task<IActionResult> EditGlass(int id)
@@ -56,6 +61,7 @@ namespace EyeClinicApp.Controllers
                 return NotFound();
             }
 
+            ViewBag.GlassCategories = GlassCategories;
             return View(glass);
         }
 
@@ -65,6 +71,7 @@ namespace EyeClinicApp.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.GlassCategories = GlassCategories;
                 return View(model);
             }
 
@@ -82,6 +89,7 @@ namespace EyeClinicApp.Controllers
 
             glass.Name = model.Name.Trim();
             glass.Brand = model.Brand.Trim();
+            glass.Category = NormalizeCategory(model.Category);
             glass.Price = model.Price;
             glass.Description = model.Description?.Trim();
 
@@ -125,9 +133,11 @@ namespace EyeClinicApp.Controllers
 
             if (!ModelState.IsValid)
             {
+                ViewBag.GlassCategories = GlassCategories;
                 return View(glass);
             }
 
+            glass.Category = NormalizeCategory(glass.Category);
             glass.ImageBase64 = await ImageUploadHelper.ConvertToBase64Async(imageFile);
 
             _context.Glasses.Add(glass);
@@ -324,6 +334,11 @@ namespace EyeClinicApp.Controllers
                 .Where(s => !reservedIds.Contains(s.Id))
                 .Select(s => new SelectListItem(s.GetDisplayLabel(), s.Id.ToString()))
                 .ToList();
+        }
+
+        private static string NormalizeCategory(string? category)
+        {
+            return GlassCategories.FirstOrDefault(c => string.Equals(c, category, StringComparison.OrdinalIgnoreCase)) ?? "Men";
         }
 
         private static string NormalizePhone(string phone)

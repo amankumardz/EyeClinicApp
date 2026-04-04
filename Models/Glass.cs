@@ -14,6 +14,10 @@ namespace EyeClinicApp.Models
         [MaxLength(120)]
         public string Brand { get; set; } = string.Empty;
 
+        [Required]
+        [MaxLength(20)]
+        public string Category { get; set; } = "Men";
+
         [Range(0, 100000)]
         public decimal Price { get; set; }
 
