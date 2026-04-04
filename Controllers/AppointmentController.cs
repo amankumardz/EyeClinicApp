@@ -104,7 +104,7 @@ namespace EyeClinicApp.Controllers
         [Authorize]
         public async Task<IActionResult> Confirm(DateTime? selectedDate, int? timeSlotId)
         {
-            var selectedDateFromQuery = selectedDate.HasValue ? GetSafeDate(selectedDate) : null;
+            DateTime? selectedDateFromQuery = selectedDate.HasValue ? GetSafeDate(selectedDate) : null;
             var selectedDateFromTempData = ReadSelectedDateFromTempData();
             var selectedDateValue = selectedDateFromQuery ?? selectedDateFromTempData;
 
