@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Razorpay.Api;
+using AppOrder = EyeClinicApp.Models.Order;
 using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
@@ -88,7 +89,7 @@ namespace EyeClinicApp.Controllers
                 return View(model);
             }
 
-            var order = new Order
+            var order = new AppOrder
             {
                 UserId = userId,
                 Name = model.Name.Trim(),
@@ -153,7 +154,7 @@ namespace EyeClinicApp.Controllers
                 return StatusCode(500, new { error = "Razorpay is not configured. Please contact support." });
             }
 
-            var order = new Order
+            var order = new AppOrder
             {
                 UserId = userId,
                 Name = model.Name.Trim(),
@@ -331,7 +332,7 @@ namespace EyeClinicApp.Controllers
             return string.Equals(generatedSignature, request.RazorpaySignature, StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task SendOrderEmailsAsync(Order order, List<CartRowViewModel> items)
+        private async Task SendOrderEmailsAsync(AppOrder order, List<CartRowViewModel> items)
         {
             var itemRows = string.Join(string.Empty, items.Select(i => $"<tr><td>{i.Name}</td><td>{i.Quantity}</td><td>{i.Price:C}</td></tr>"));
             var emailBody = $@"<h2>Order Confirmation #{order.Id}</h2>
