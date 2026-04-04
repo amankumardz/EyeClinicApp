@@ -35,6 +35,20 @@ namespace EyeClinicApp.Models
         [MaxLength(20)]
         public string Status { get; set; } = OrderStatus.Pending;
 
+        [Required]
+        [MaxLength(40)]
+        public string PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
+
+        [Required]
+        [MaxLength(30)]
+        public string PaymentStatus { get; set; } = OrderPaymentStatus.Pending;
+
+        [MaxLength(150)]
+        public string? PaymentId { get; set; }
+
+        [MaxLength(150)]
+        public string? RazorpayOrderId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
