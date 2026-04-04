@@ -1,6 +1,8 @@
 @model IEnumerable<EyeClinicApp.Models.Glass>
 @{
     ViewData["Title"] = "Eyewear Catalog";
+    var selectedCategory = (ViewBag.SelectedCategory as string) ?? string.Empty;
+    var categories = (IEnumerable<string>)(ViewBag.Categories ?? new[] { "Men", "Women", "Kids" });
 }
 
 @if (TempData["CartMessage"] is string cartMessage)
@@ -8,88 +10,163 @@
     <div class="alert alert-success">@cartMessage</div>
 }
 
-<div class="page-head fade-in">
+<section class="catalog-hero-banner fade-in mb-4">
     <div>
-        <h1 class="mb-1">Eyewear Catalog</h1>
-        <p class="text-secondary mb-0">Discover premium frames with modern comfort and timeless styling.</p>
+        <p class="promo-pill mb-2">TRENDING OFFERS</p>
+        <h1 class="mb-2">Eyewear that elevates your everyday look</h1>
+        <p class="mb-0">Starting ₹500 • Buy 1 Get 1 • Free blue-light lens upgrade on selected styles.</p>
     </div>
-    <div class="d-flex gap-2">
-        <button class="btn btn-soft btn-sm" type="button"><i class="bi bi-funnel me-1"></i>Filters</button>
-        <button class="btn btn-soft btn-sm" type="button"><i class="bi bi-arrow-down-up me-1"></i>Sort</button>
-    </div>
-</div>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-light btn-sm px-3">Shop Deals</a>
+</section>
 
-@if (Model is null || !Model.Any())
-{
-    <div class="alert alert-info">No glasses are available right now.</div>
-}
-else
-{
-    <div class="row g-4">
-        @foreach (var item in Model)
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="section-title mb-0">Shop by Category</h2>
+        @if (!string.IsNullOrWhiteSpace(selectedCategory))
         {
-            <div class="col-sm-6 col-lg-4 col-xl-3 fade-in">
-                <article class="product-card product-card--interactive">
-                    <div class="product-media product-media--interactive">
-                        @if (!string.IsNullOrWhiteSpace(item.ImageBase64))
-                        {
-                            <img src="data:image/jpeg;base64,@item.ImageBase64" alt="@item.Name" />
-                        }
-                        else
-                        {
-                            <img src="~/images/placeholders/product.svg" alt="No image available" />
-                        }
-
-                        <div class="product-overlay">
-                            @if (User.Identity?.IsAuthenticated ?? false)
-                            {
-                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="w-100">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="glassId" value="@item.Id" />
-                                    <button type="submit" class="btn btn-primary add-to-cart-btn w-100">
-                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
-                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                                </a>
-                            }
-                        </div>
-                    </div>
-                    <div class="p-3 p-lg-4 d-flex flex-column h-100">
-                        <p class="text-uppercase text-secondary small mb-1">@item.Brand</p>
-                        <h5 class="mb-2">@item.Name</h5>
-                        <p class="text-secondary small flex-grow-1">@item.Description</p>
-
-                        <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
-                            <span class="price-tag">@item.Price.ToString("C")</span>
-                            <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft btn-sm px-3 view-details-btn" aria-label="View details for @item.Name">View Details</a>
-                        </div>
-
-                        <div class="add-to-cart-mobile mt-3">
-                            @if (User.Identity?.IsAuthenticated ?? false)
-                            {
-                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-grid">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="glassId" value="@item.Id" />
-                                    <button type="submit" class="btn btn-primary add-to-cart-btn">
-                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
-                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                                </a>
-                            }
-                        </div>
-                    </div>
-                </article>
-            </div>
+            <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft btn-sm">Clear Filter</a>
         }
     </div>
-}
+
+    <div class="row g-3 g-lg-4">
+        <div class="col-12 col-md-4 fade-in">
+            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Men" class="category-tile @(selectedCategory == "Men" ? "active" : string.Empty)">
+                <img src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=80" alt="Men eyeglasses" />
+                <div class="category-tile__content">
+                    <h3>MEN</h3>
+                    <p class="mb-0">with FREE lenses</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-4 fade-in">
+            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Women" class="category-tile @(selectedCategory == "Women" ? "active" : string.Empty)">
+                <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80" alt="Women eyeglasses" />
+                <div class="category-tile__content">
+                    <h3>WOMEN</h3>
+                    <p class="mb-0">with FREE lenses</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-4 fade-in">
+            <a asp-controller="Catalog" asp-action="Index" asp-route-category="Kids" class="category-tile @(selectedCategory == "Kids" ? "active" : string.Empty)">
+                <img src="https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?auto=format&fit=crop&w=900&q=80" alt="Kids eyeglasses" />
+                <div class="category-tile__content">
+                    <h3>KIDS</h3>
+                    <p class="mb-0">durable playful styles</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="catalog-banner-grid mb-4">
+    <article class="catalog-highlight-card">
+        <p class="small text-uppercase mb-1">Limited Time</p>
+        <h3 class="mb-1">Starting ₹500</h3>
+        <p class="mb-0">Lightweight frames with anti-glare lenses included.</p>
+    </article>
+    <article class="catalog-highlight-card dark">
+        <p class="small text-uppercase mb-1">Best Seller Deal</p>
+        <h3 class="mb-1">Buy 1 Get 1</h3>
+        <p class="mb-0">Pick any second frame from selected premium brands.</p>
+    </article>
+</section>
+
+<section>
+    <div class="page-head fade-in">
+        <div>
+            <h2 class="mb-1">Explore Collection</h2>
+            <p class="text-secondary mb-0">Premium styles curated for comfort, confidence, and every face shape.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Catalog" asp-action="Index" class="btn btn-soft btn-sm @(string.IsNullOrWhiteSpace(selectedCategory) ? "active-filter" : string.Empty)">All</a>
+            @foreach (var category in categories)
+            {
+                <a asp-controller="Catalog" asp-action="Index" asp-route-category="@category" class="btn btn-soft btn-sm @(selectedCategory == category ? "active-filter" : string.Empty)">@category</a>
+            }
+        </div>
+    </div>
+
+    @if (Model is null || !Model.Any())
+    {
+        <div class="alert alert-info">No products found for this category. Try another filter.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-sm-6 col-lg-4 col-xl-3 fade-in">
+                    <article class="product-card product-card--interactive lenskart-card">
+                        <div class="product-media product-media--interactive">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageBase64))
+                            {
+                                <img src="data:image/jpeg;base64,@item.ImageBase64" alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <img src="~/images/placeholders/product.svg" alt="No image available" />
+                            }
+
+                            <button type="button" class="wishlist-btn" aria-label="Add @item.Name to wishlist">
+                                <i class="bi bi-heart"></i>
+                            </button>
+
+                            <div class="product-overlay">
+                                <div class="d-grid gap-2">
+                                    @if (User.Identity?.IsAuthenticated ?? false)
+                                    {
+                                        <form asp-controller="Cart" asp-action="AddToCart" method="post" class="w-100">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="glassId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-primary add-to-cart-btn w-100">
+                                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
+                                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                        </a>
+                                    }
+                                    <button type="button" class="btn btn-light btn-sm">Quick View</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 p-lg-4 d-flex flex-column h-100">
+                            <p class="text-uppercase text-secondary small mb-1">@item.Brand</p>
+                            <h5 class="mb-1">@item.Name</h5>
+                            <p class="text-secondary small mb-2">@item.Category Collection</p>
+                            <p class="text-secondary small flex-grow-1">@item.Description</p>
+
+                            <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+                                <span class="price-tag">₹@item.Price.ToString("0.00")</span>
+                                <span class="badge text-bg-light border">Free Lenses</span>
+                            </div>
+
+                            <div class="add-to-cart-mobile mt-3">
+                                @if (User.Identity?.IsAuthenticated ?? false)
+                                {
+                                    <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-grid">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="glassId" value="@item.Id" />
+                                        <button type="submit" class="btn btn-primary add-to-cart-btn">
+                                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary add-to-cart-btn w-100" title="Sign in to add this item to your cart">
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    }
+</section>

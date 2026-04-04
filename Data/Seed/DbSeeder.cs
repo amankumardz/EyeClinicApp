@@ -74,6 +74,7 @@ namespace EyeClinicApp.Data.Seed
                     {
                         Name = "Clarity Plus",
                         Brand = "VisionPro",
+                        Category = "Men",
                         Price = 89.99m,
                         ImageBase64 = null,
                         Description = "Lightweight daily eyewear with anti-glare coating."
@@ -82,6 +83,7 @@ namespace EyeClinicApp.Data.Seed
                     {
                         Name = "Urban Focus",
                         Brand = "LensCraft",
+                        Category = "Women",
                         Price = 129.50m,
                         ImageBase64 = null,
                         Description = "Modern acetate frame designed for all-day comfort."
@@ -90,6 +92,7 @@ namespace EyeClinicApp.Data.Seed
                     {
                         Name = "Reader Max",
                         Brand = "OptiLook",
+                        Category = "Kids",
                         Price = 74.00m,
                         ImageBase64 = null,
                         Description = "Premium reading glasses with blue light filter."
@@ -307,6 +310,11 @@ END
 IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
 BEGIN
     ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
+END
+
+IF COL_LENGTH('dbo.Glasses', 'Category') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Glasses] ADD [Category] nvarchar(20) NOT NULL CONSTRAINT [DF_Glasses_Category] DEFAULT('Men');
 END
 
 IF NOT EXISTS (
