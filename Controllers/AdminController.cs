@@ -271,6 +271,41 @@ namespace EyeClinicApp.Controllers
             return RedirectToAction(nameof(ManageAppointments));
         }
 
+
+        public async Task<IActionResult> ManageOrders()
+        {
+            var orders = await _context.Orders
+                .AsNoTracking()
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Glass)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.AllowedStatuses = OrderStatus.Flow;
+            return View(orders);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrderStatus(int id, string status)
+        {
+            if (!OrderStatus.Flow.Contains(status))
+            {
+                return BadRequest();
+            }
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order is null)
+            {
+                return NotFound();
+            }
+
+            order.Status = status;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ManageOrders));
+        }
+
         private async Task<IReadOnlyCollection<SelectListItem>> GetSlotOptionsAsync(DateTime date, int appointmentId)
         {
             var reservedIds = await _context.Appointments
