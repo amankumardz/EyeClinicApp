@@ -37,7 +37,7 @@ namespace EyeClinicApp.Models
 
         [Required]
         [MaxLength(40)]
-        public string PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
+        public string PaymentMethod { get; set; } = global::EyeClinicApp.Models.PaymentMethod.CashOnDelivery;
 
         [Required]
         [MaxLength(30)]
