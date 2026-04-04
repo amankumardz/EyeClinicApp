@@ -3,6 +3,11 @@
     ViewData["Title"] = "Eyewear Catalog";
 }
 
+@if (TempData["CartMessage"] is string cartMessage)
+{
+    <div class="alert alert-success">@cartMessage</div>
+}
+
 <div class="page-head fade-in">
     <div>
         <h1 class="mb-1">Eyewear Catalog</h1>
@@ -41,7 +46,11 @@ else
                         <p class="text-secondary small flex-grow-1">@item.Description</p>
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <span class="price-tag">@item.Price.ToString("C")</span>
-                            <a href="#" class="btn btn-brand btn-sm px-3">View</a>
+                            <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="glassId" value="@item.Id" />
+                                <button type="submit" class="btn btn-brand btn-sm px-3">Add to Cart</button>
+                            </form>
                         </div>
                     </div>
                 </article>

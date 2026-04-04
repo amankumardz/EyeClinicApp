@@ -1,0 +1,48 @@
+@model IEnumerable<EyeClinicApp.Models.Order>
+@{
+    ViewData["Title"] = "Manage Orders";
+    var statuses = ViewBag.AllowedStatuses as string[] ?? [];
+}
+
+<h1 class="mb-4">Manage Orders</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No orders found.</div>
+}
+else
+{
+    foreach (var order in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Order #@order.Id</h5>
+                    <span class="badge bg-dark">@order.Status</span>
+                </div>
+                <p class="mb-1"><strong>Customer:</strong> @order.Name (@order.Email)</p>
+                <p class="mb-1"><strong>Address:</strong> @order.Address</p>
+                <p class="mb-2"><strong>Total:</strong> @order.TotalAmount.ToString("C")</p>
+
+                <ul class="mb-3">
+                    @foreach (var item in order.Items)
+                    {
+                        <li>@item.Glass?.Name - @item.Quantity x @item.Price.ToString("C")</li>
+                    }
+                </ul>
+
+                <form asp-action="UpdateOrderStatus" method="post" class="d-flex gap-2 align-items-center">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@order.Id" />
+                    <select name="status" class="form-select" style="max-width:240px;">
+                        @foreach (var status in statuses)
+                        {
+                            <option value="@status" selected="@(status == order.Status ? "selected" : null)">@status</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+                </form>
+            </div>
+        </div>
+    }
+}

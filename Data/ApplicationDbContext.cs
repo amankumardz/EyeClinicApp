@@ -14,6 +14,9 @@ namespace EyeClinicApp.Data
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<PersonProfile> PersonProfiles { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -62,6 +65,43 @@ namespace EyeClinicApp.Data
             builder.Entity<Review>()
                 .Property(r => r.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
+
+            builder.Entity<CartItem>()
+                .HasIndex(c => new { c.UserId, c.GlassId })
+                .IsUnique()
+                .HasFilter("[UserId] IS NOT NULL");
+
+            builder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasPrecision(18, 2);
+
+            builder.Entity<OrderItem>()
+                .Property(o => o.Price)
+                .HasPrecision(18, 2);
+
+            builder.Entity<Order>()
+                .HasMany(o => o.Items)
+                .WithOne(i => i.Order)
+                .HasForeignKey(i => i.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<OrderItem>()
+                .HasOne(i => i.Glass)
+                .WithMany()
+                .HasForeignKey(i => i.GlassId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CartItem>()
+                .HasOne(c => c.Glass)
+                .WithMany()
+                .HasForeignKey(c => c.GlassId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CartItem>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

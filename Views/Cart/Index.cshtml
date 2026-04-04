@@ -1,0 +1,65 @@
+@model EyeClinicApp.ViewModels.CartPageViewModel
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<h1 class="mb-4">My Cart</h1>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">Your cart is empty.</div>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-brand">Continue Shopping</a>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Line Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td style="width: 90px;">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageBase64))
+                            {
+                                <img src="data:image/jpeg;base64,@item.ImageBase64" class="img-fluid rounded" alt="@item.Name" />
+                            }
+                        </td>
+                        <td>@item.Name</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>
+                            <form asp-action="UpdateQuantity" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                <input type="number" name="quantity" min="1" value="@item.Quantity" class="form-control" style="max-width:100px;" />
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Update</button>
+                            </form>
+                        </td>
+                        <td>@item.LineTotal.ToString("C")</td>
+                        <td>
+                            <form asp-action="Remove" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <h4>Total: @Model.Total.ToString("C")</h4>
+        <a asp-controller="Order" asp-action="Checkout" class="btn btn-brand">Proceed to Checkout</a>
+    </div>
+}

@@ -1,0 +1,63 @@
+@model EyeClinicApp.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h1 class="mb-4">Checkout</h1>
+
+<form asp-action="Checkout" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card p-3 p-lg-4">
+                <h5>Shipping Details</h5>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label"></label>
+                    <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card p-3 p-lg-4">
+                <h5>Order Summary</h5>
+                <ul class="list-group list-group-flush mb-3">
+                    @foreach (var item in Model.Items)
+                    {
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>@item.Name x @item.Quantity</span>
+                            <span>@item.LineTotal.ToString("C")</span>
+                        </li>
+                    }
+                </ul>
+                <h4>Total: @Model.Total.ToString("C")</h4>
+                <button type="submit" class="btn btn-brand w-100 mt-2">Place Order</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

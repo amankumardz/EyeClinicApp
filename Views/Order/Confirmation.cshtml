@@ -1,0 +1,17 @@
+@model EyeClinicApp.Models.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="card p-4">
+    <h1>Order Placed Successfully</h1>
+    <p class="mb-1"><strong>Order ID:</strong> #@Model.Id</p>
+    <p class="mb-1"><strong>Status:</strong> @Model.Status</p>
+    <p class="mb-1"><strong>Total:</strong> @Model.TotalAmount.ToString("C")</p>
+    <p class="mb-3"><strong>Created:</strong> @Model.CreatedAt.ToLocalTime().ToString("f")</p>
+
+    <div class="d-flex gap-2">
+        <a asp-action="MyOrders" class="btn btn-brand">Track My Orders</a>
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-secondary">Continue Shopping</a>
+    </div>
+</div>
