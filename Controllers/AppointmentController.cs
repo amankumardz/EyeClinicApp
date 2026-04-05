@@ -4,6 +4,7 @@ using EyeClinicApp.Services;
 using EyeClinicApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Data;
@@ -47,6 +48,7 @@ namespace EyeClinicApp.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("appointment-booking")]
         public async Task<IActionResult> Book(BookAppointmentSlotSelectionViewModel model)
         {
             _logger.LogInformation("Book POST fallback received SelectedDate={SelectedDate}, SelectedSlotId={SelectedSlotId}", model.SelectedDate, model.SelectedSlotId);
@@ -56,6 +58,7 @@ namespace EyeClinicApp.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("appointment-booking")]
         public async Task<IActionResult> SelectSlot(DateTime SelectedDate, int TimeSlotId)
         {
             _logger.LogInformation("SelectSlot POST received SelectedDate={SelectedDate}, TimeSlotId={TimeSlotId}", SelectedDate, TimeSlotId);
@@ -175,6 +178,7 @@ namespace EyeClinicApp.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("appointment-booking")]
         public async Task<IActionResult> Confirm(BookAppointmentViewModel model)
         {
             model.AppointmentDate = model.AppointmentDate.Date;
