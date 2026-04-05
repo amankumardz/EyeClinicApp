@@ -7,8 +7,6 @@ namespace EyeClinicApp.Data.Seed
     public static class DbSeeder
     {
         private const string AdminRoleName = "Admin";
-        private const string AdminEmail = "admin@eyeclinic.local";
-        private const string AdminPassword = "Admin@12345";
 
         public static async Task SeedAsync(IServiceProvider services)
         {
@@ -17,6 +15,8 @@ namespace EyeClinicApp.Data.Seed
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
             await context.Database.MigrateAsync();
             await EnsureSchemaCompatibilityAsync(context);
@@ -26,28 +26,48 @@ namespace EyeClinicApp.Data.Seed
                 await roleManager.CreateAsync(new IdentityRole(AdminRoleName));
             }
 
-            var adminUser = await userManager.FindByEmailAsync(AdminEmail);
-            if (adminUser is null)
-            {
-                adminUser = new ApplicationUser
-                {
-                    UserName = AdminEmail,
-                    Email = AdminEmail,
-                    FullName = "System Administrator",
-                    EmailConfirmed = true
-                };
+            var adminEmail = configuration["AdminBootstrap:Email"]?.Trim();
+            var adminPassword = configuration["AdminBootstrap:Password"];
 
-                var createResult = await userManager.CreateAsync(adminUser, AdminPassword);
-                if (!createResult.Succeeded)
-                {
-                    var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
-                    throw new InvalidOperationException($"Failed to create admin user: {errors}");
-                }
+            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            {
+                logger.LogWarning("Admin bootstrap skipped. Configure AdminBootstrap__Email and AdminBootstrap__Password environment variables for production.");
             }
-
-            if (!await userManager.IsInRoleAsync(adminUser, AdminRoleName))
+            else if (!IsStrongBootstrapPassword(adminPassword))
             {
-                await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+                logger.LogWarning("Admin bootstrap skipped because AdminBootstrap password is weak. It must be at least 12 chars with upper, lower, digit and symbol.");
+            }
+            else
+            {
+                var adminUser = await userManager.FindByEmailAsync(adminEmail);
+                if (adminUser is null)
+                {
+                    adminUser = new ApplicationUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        FullName = "System Administrator",
+                        EmailConfirmed = true,
+                        LockoutEnabled = true
+                    };
+
+                    var createResult = await userManager.CreateAsync(adminUser, adminPassword);
+                    if (!createResult.Succeeded)
+                    {
+                        var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                        throw new InvalidOperationException($"Failed to create admin user: {errors}");
+                    }
+                }
+                else if (!adminUser.EmailConfirmed)
+                {
+                    adminUser.EmailConfirmed = true;
+                    await userManager.UpdateAsync(adminUser);
+                }
+
+                if (!await userManager.IsInRoleAsync(adminUser, AdminRoleName))
+                {
+                    await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+                }
             }
 
             var requiredSlots = GenerateStandardSlots().ToList();
@@ -202,7 +222,7 @@ namespace EyeClinicApp.Data.Seed
                         Name = "System Administrator",
                         PhoneNumber = "+1-555-123-4567",
                         NormalizedPhoneNumber = "15551234567",
-                        Email = adminUser.Email,
+                        Email = adminEmail,
                         AppointmentDate = DateTime.UtcNow.Date.AddDays(2),
                         TimeSlotId = firstSlotId,
                         Status = AppointmentStatus.Pending,
@@ -225,9 +245,6 @@ namespace EyeClinicApp.Data.Seed
 
             await context.SaveChangesAsync();
         }
-
-        public static string GetAdminCredentialsSummary() =>
-            $"Admin login => Email: {AdminEmail}, Password: {AdminPassword}";
 
         private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
         {
@@ -529,6 +546,19 @@ BEGIN
         FOREIGN KEY([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE CASCADE;
 END
 ");
+        }
+
+        private static bool IsStrongBootstrapPassword(string password)
+        {
+            if (password.Length < 12)
+            {
+                return false;
+            }
+
+            return password.Any(char.IsUpper)
+                && password.Any(char.IsLower)
+                && password.Any(char.IsDigit)
+                && password.Any(ch => !char.IsLetterOrDigit(ch));
         }
 
         private static IEnumerable<TimeSlot> GenerateStandardSlots()

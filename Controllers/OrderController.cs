@@ -4,6 +4,7 @@ using EyeClinicApp.Services;
 using EyeClinicApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Razorpay.Api;
 using AppOrder = EyeClinicApp.Models.Order;
@@ -54,6 +55,7 @@ namespace EyeClinicApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("checkout")]
         public async Task<IActionResult> Checkout(CheckoutViewModel model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -125,6 +127,7 @@ namespace EyeClinicApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("checkout")]
         public async Task<IActionResult> CreateRazorpayOrder([FromForm] CheckoutViewModel model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -202,6 +205,7 @@ namespace EyeClinicApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("checkout")]
         public async Task<IActionResult> VerifyRazorpayPayment([FromBody] RazorpayVerificationRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -348,7 +352,7 @@ namespace EyeClinicApp.Controllers
 
             await _emailService.SendEmailAsync(order.Email, $"Order #{order.Id} Confirmation", emailBody);
 
-            var adminEmail = _configuration["SmtpSettings:Email"];
+            var adminEmail = _configuration["SmtpSettings:AdminEmail"];
             if (!string.IsNullOrWhiteSpace(adminEmail))
             {
                 await _emailService.SendEmailAsync(adminEmail, $"New Order #{order.Id}",

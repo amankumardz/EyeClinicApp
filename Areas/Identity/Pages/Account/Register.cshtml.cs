@@ -95,6 +95,11 @@ public class RegisterModel : PageModel
 
                 _logger.LogInformation("Email confirmation link generated for {Email}: {Link}", Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    return RedirectToPage("./RegisterConfirmation", new { email = Input.Email, returnUrl });
+                }
+
                 await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, new[]
                 {
                     new Claim("FullName", string.IsNullOrWhiteSpace(user.FullName) ? Input.Email : user.FullName)

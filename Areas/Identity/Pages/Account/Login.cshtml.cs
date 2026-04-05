@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using EyeClinicApp.Models;
 
 namespace EyeClinicApp.Areas.Identity.Pages.Account;
 
+[EnableRateLimiting("login")]
 public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -69,7 +71,7 @@ public class LoginModel : PageModel
 
         if (ModelState.IsValid)
         {
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
             if (result.Succeeded)
             {
                 var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
@@ -96,6 +98,11 @@ public class LoginModel : PageModel
             {
                 _logger.LogWarning("User account locked out.");
                 return RedirectToPage("./Lockout");
+            }
+            if (result.IsNotAllowed)
+            {
+                ModelState.AddModelError(string.Empty, "You must confirm your email before signing in.");
+                return Page();
             }
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
