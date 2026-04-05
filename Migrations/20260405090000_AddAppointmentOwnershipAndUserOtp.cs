@@ -1,10 +1,14 @@
 using System;
+using EyeClinicApp.Data;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
 namespace EyeClinicApp.Migrations
 {
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260405090000_AddAppointmentOwnershipAndUserOtp")]
     public partial class AddAppointmentOwnershipAndUserOtp : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
