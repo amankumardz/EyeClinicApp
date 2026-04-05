@@ -731,9 +731,9 @@ h5 {
 }
 
 .slot-item.status-booked .slot-pill {
-    background: #f3f5f8;
-    border-color: #e2e8f0;
-    color: #8a94a6;
+    background: #fff1f1;
+    border-color: #ffcaca;
+    color: #8f1d1d;
     cursor: not-allowed;
 }
 
@@ -741,9 +741,20 @@ h5 {
     color: #c0392b;
 }
 
+.slot-item.status-expired .slot-pill {
+    background: #f3f5f8;
+    border-color: #d8dde6;
+    color: #7b8495;
+    cursor: not-allowed;
+}
+
+.slot-item.status-expired .slot-status {
+    color: #6b7280;
+}
+
 .slot-item.status-available .slot-pill {
-    border-color: #cae7d4;
-    background: linear-gradient(180deg, #f8fffb 0%, #effcf5 100%);
+    border-color: #97d9ac;
+    background: linear-gradient(180deg, #f2fff6 0%, #dff7e7 100%);
 }
 
 .slot-item.status-selected .slot-pill {
