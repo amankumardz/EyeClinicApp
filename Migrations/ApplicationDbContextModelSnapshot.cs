@@ -156,17 +156,25 @@ namespace EyeClinicApp.Migrations
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ModifiedByAdminId");
 
                     b.HasIndex("TimeSlotId");
 
+                    b.HasIndex("UserId");
+
                     b.HasIndex("AppointmentDate", "TimeSlotId")
                         .IsUnique()
                         .HasFilter("[Status] <> 'Rejected' AND [Status] <> 'Completed'");
 
                     b.HasIndex("NormalizedPhoneNumber", "Status");
+
+                    b.HasIndex("UserId", "AppointmentDate");
 
                     b.ToTable("Appointments");
                 });
@@ -461,6 +469,45 @@ namespace EyeClinicApp.Migrations
                     b.ToTable("TimeSlots");
                 });
 
+            modelBuilder.Entity("EyeClinicApp.Models.UserOtp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UsedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Purpose", "ExpiryTime");
+
+                    b.ToTable("UserOtps");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -605,6 +652,11 @@ namespace EyeClinicApp.Migrations
                         .HasForeignKey("ModifiedByAdminId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("EyeClinicApp.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("EyeClinicApp.Models.TimeSlot", "TimeSlot")
                         .WithMany("Appointments")
                         .HasForeignKey("TimeSlotId")
@@ -614,6 +666,8 @@ namespace EyeClinicApp.Migrations
                     b.Navigation("ModifiedByAdmin");
 
                     b.Navigation("TimeSlot");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EyeClinicApp.Models.CartItem", b =>
@@ -660,6 +714,17 @@ namespace EyeClinicApp.Migrations
                     b.Navigation("Glass");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("EyeClinicApp.Models.UserOtp", b =>
+                {
+                    b.HasOne("EyeClinicApp.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
