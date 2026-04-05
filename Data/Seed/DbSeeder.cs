@@ -405,6 +405,26 @@ BEGIN
     );
 END
 
+IF COL_LENGTH('dbo.Orders', 'PaymentMethod') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Orders] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentMethod] DEFAULT('CashOnDelivery');
+END
+
+IF COL_LENGTH('dbo.Orders', 'PaymentStatus') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Orders] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentStatus] DEFAULT('Pending');
+END
+
+IF COL_LENGTH('dbo.Orders', 'PaymentId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Orders] ADD [PaymentId] nvarchar(200) NULL;
+END
+
+IF COL_LENGTH('dbo.Orders', 'RazorpayOrderId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Orders] ADD [RazorpayOrderId] nvarchar(200) NULL;
+END
+
 IF OBJECT_ID(N'[dbo].[OrderItems]', N'U') IS NULL
 BEGIN
     CREATE TABLE [dbo].[OrderItems](
