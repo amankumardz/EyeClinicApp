@@ -47,10 +47,14 @@ namespace EyeClinicApp.Models
         [MaxLength(450)]
         public string? ModifiedByAdminId { get; set; }
 
+        [MaxLength(450)]
+        public string? UserId { get; set; }
+
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAtUtc { get; set; }
 
         public TimeSlot? TimeSlot { get; set; }
         public ApplicationUser? ModifiedByAdmin { get; set; }
+        public ApplicationUser? User { get; set; }
     }
 }

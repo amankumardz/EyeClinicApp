@@ -1,10 +1,10 @@
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using EyeClinicApp.Models;
+using EyeClinicApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -16,20 +16,23 @@ namespace EyeClinicApp.Areas.Identity.Pages.Account;
 [AllowAnonymous]
 public class RegisterModel : PageModel
 {
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserStore<ApplicationUser> _userStore;
+    private readonly IEmailService _emailService;
+    private readonly IUserOtpService _userOtpService;
     private readonly ILogger<RegisterModel> _logger;
 
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
         IUserStore<ApplicationUser> userStore,
-        SignInManager<ApplicationUser> signInManager,
+        IEmailService emailService,
+        IUserOtpService userOtpService,
         ILogger<RegisterModel> logger)
     {
         _userManager = userManager;
         _userStore = userStore;
-        _signInManager = signInManager;
+        _emailService = emailService;
+        _userOtpService = userOtpService;
         _logger = logger;
     }
 
@@ -93,17 +96,27 @@ public class RegisterModel : PageModel
                     values: new { area = "Identity", userId, code, returnUrl },
                     protocol: Request.Scheme);
 
-                _logger.LogInformation("Email confirmation link generated for {Email}: {Link}", Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+                await _emailService.SendEmailAsync(
+                    Input.Email,
+                    "Confirm your email",
+                    $"""
+                     <p>Please confirm your account by clicking the link below:</p>
+                     <p><a href="{HtmlEncoder.Default.Encode(callbackUrl)}">Confirm email address</a></p>
+                     """);
+
+                await _userOtpService.GenerateAndSendOtpAsync(user, UserOtpService.PurposeRegistration);
+                _logger.LogInformation("Email confirmation link and registration OTP sent for {Email}.", Input.Email);
 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
-                    return RedirectToPage("./RegisterConfirmation", new { email = Input.Email, returnUrl });
+                    return RedirectToPage("./VerifyOtp", new
+                    {
+                        userId,
+                        returnUrl,
+                        purpose = UserOtpService.PurposeRegistration
+                    });
                 }
 
-                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, new[]
-                {
-                    new Claim("FullName", string.IsNullOrWhiteSpace(user.FullName) ? Input.Email : user.FullName)
-                });
                 return LocalRedirect(returnUrl);
             }
 
