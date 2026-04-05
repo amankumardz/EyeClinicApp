@@ -1,0 +1,29 @@
+@page
+@model EyeClinicApp.Areas.Identity.Pages.Account.VerifyOtpModel
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Enter OTP sent to your email.</p>
+
+<form method="post">
+    <input asp-for="UserId" type="hidden" />
+    <input asp-for="Purpose" type="hidden" />
+    <input asp-for="RememberMe" type="hidden" />
+    <input asp-for="ReturnUrl" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Input.Code" class="form-control" autocomplete="one-time-code" />
+        <label asp-for="Input.Code"></label>
+        <span asp-validation-for="Input.Code" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Verify OTP</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

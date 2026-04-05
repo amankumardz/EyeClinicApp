@@ -22,6 +22,7 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IUserOtpService, UserOtpService>();
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
@@ -34,6 +35,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedEmail = true;
 
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;

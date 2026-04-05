@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Data;
 using System.Text;
 
 namespace EyeClinicApp.Controllers
 {
+    [Authorize]
     public class AppointmentController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -255,6 +257,12 @@ namespace EyeClinicApp.Controllers
                 return View(model);
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
             var appointment = new Appointment
             {
                 Name = model.Name.Trim(),
@@ -266,6 +274,7 @@ namespace EyeClinicApp.Controllers
                 Address = string.IsNullOrWhiteSpace(model.Address) ? null : model.Address.Trim(),
                 AppointmentDate = model.AppointmentDate,
                 TimeSlotId = model.TimeSlotId,
+                UserId = userId,
                 Status = AppointmentStatus.Pending,
                 CreatedAtUtc = DateTime.UtcNow
             };
@@ -295,21 +304,18 @@ namespace EyeClinicApp.Controllers
 
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> MyAppointments()
         {
-            var signedInEmail = User.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(signedInEmail))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return View(Enumerable.Empty<Appointment>());
             }
 
-            var normalizedEmail = signedInEmail.Trim().ToLowerInvariant();
-
             var appointments = await _context.Appointments
                 .AsNoTracking()
                 .Include(a => a.TimeSlot)
-                .Where(a => a.Email != null && a.Email.ToLower() == normalizedEmail)
+                .Where(a => a.UserId == userId)
                 .OrderByDescending(a => a.AppointmentDate)
                 .ThenByDescending(a => a.CreatedAtUtc)
                 .ToListAsync();

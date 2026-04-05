@@ -17,6 +17,7 @@ namespace EyeClinicApp.Data
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<UserOtp> UserOtps { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -49,6 +50,15 @@ namespace EyeClinicApp.Data
                 .WithMany()
                 .HasForeignKey(a => a.ModifiedByAdminId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.UserId, a.AppointmentDate });
 
             builder.Entity<Glass>()
                 .Property(g => g.Price)
@@ -101,6 +111,15 @@ namespace EyeClinicApp.Data
                 .HasOne(c => c.User)
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserOtp>()
+                .HasIndex(o => new { o.UserId, o.Purpose, o.ExpiryTime });
+
+            builder.Entity<UserOtp>()
+                .HasOne(o => o.User)
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

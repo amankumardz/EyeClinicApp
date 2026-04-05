@@ -1,13 +1,13 @@
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.RateLimiting;
 using EyeClinicApp.Models;
+using EyeClinicApp.Services;
 
 namespace EyeClinicApp.Areas.Identity.Pages.Account;
 
@@ -15,11 +15,13 @@ namespace EyeClinicApp.Areas.Identity.Pages.Account;
 public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserOtpService _userOtpService;
     private readonly ILogger<LoginModel> _logger;
 
-    public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+    public LoginModel(SignInManager<ApplicationUser> signInManager, IUserOtpService userOtpService, ILogger<LoginModel> logger)
     {
         _signInManager = signInManager;
+        _userOtpService = userOtpService;
         _logger = logger;
     }
 
@@ -71,24 +73,32 @@ public class LoginModel : PageModel
 
         if (ModelState.IsValid)
         {
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+            var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+            if (user is null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return Page();
+            }
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, Input.Password, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
-                if (user is not null)
+                if (!await _signInManager.UserManager.IsEmailConfirmedAsync(user))
                 {
-                    var fullName = string.IsNullOrWhiteSpace(user.FullName)
-                        ? (user.Email ?? user.UserName ?? "User")
-                        : user.FullName;
-
-                    await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, new[]
-                    {
-                        new Claim("FullName", fullName)
-                    });
+                    ModelState.AddModelError(string.Empty, "You must confirm your email before signing in.");
+                    return Page();
                 }
 
-                _logger.LogInformation("User logged in.");
-                return LocalRedirect(returnUrl);
+                await _userOtpService.GenerateAndSendOtpAsync(user, UserOtpService.PurposeLogin);
+                _logger.LogInformation("Password validated, OTP sent for UserId={UserId}.", user.Id);
+
+                return RedirectToPage("./VerifyOtp", new
+                {
+                    userId = user.Id,
+                    returnUrl,
+                    rememberMe = Input.RememberMe,
+                    purpose = UserOtpService.PurposeLogin
+                });
             }
             if (result.RequiresTwoFactor)
             {
