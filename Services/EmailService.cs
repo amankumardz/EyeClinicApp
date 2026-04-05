@@ -16,6 +16,11 @@ namespace EyeClinicApp.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
+            if (string.IsNullOrWhiteSpace(toEmail))
+            {
+                return;
+            }
+
             using var message = new MailMessage
             {
                 From = new MailAddress(_smtpSettings.Email),
@@ -24,7 +29,7 @@ namespace EyeClinicApp.Services
                 IsBodyHtml = true
             };
 
-            message.To.Add(toEmail);
+            message.To.Add(toEmail.Trim());
 
             using var smtp = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port)
             {

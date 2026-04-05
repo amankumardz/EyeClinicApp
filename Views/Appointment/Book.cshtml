@@ -57,16 +57,20 @@
                             @foreach (var slot in shiftGroup.Slots)
                             {
                                 var isSelected = Model.SelectedSlotId == slot.Id;
-                                var stateClass = slot.IsBooked ? "booked" : isSelected ? "selected" : "available";
+                                var isDisabled = slot.IsBooked || slot.IsExpired;
+                                var stateClass = slot.IsBooked ? "booked" : slot.IsExpired ? "expired" : isSelected ? "selected" : "available";
+                                var statusText = slot.IsBooked ? "Booked" : slot.IsExpired ? "Expired" : "Available";
+                                var statusTitle = slot.IsExpired ? "Slot already passed" : slot.IsBooked ? "Already booked" : "Available slot";
                                 <label class="slot-item status-@stateClass">
                                     <button type="button"
                                             class="slot-select-btn"
                                             data-slot-id="@slot.Id"
-                                            disabled="@slot.IsBooked"
+                                            disabled="@isDisabled"
+                                            title="@statusTitle"
                                             aria-pressed="@(isSelected.ToString().ToLowerInvariant())">
                                     <span class="slot-pill">
                                         <span class="slot-time">@slot.Label</span>
-                                        <small class="slot-status">@((slot.IsBooked) ? "Booked" : "Available")</small>
+                                        <small class="slot-status">@statusText</small>
                                     </span>
                                     </button>
                                 </label>
@@ -81,7 +85,7 @@
             }
         </div>
 
-        @if (!Model.ShiftGroups.SelectMany(g => g.Slots).Any(s => !s.IsBooked))
+        @if (!Model.ShiftGroups.SelectMany(g => g.Slots).Any(s => !s.IsBooked && !s.IsExpired))
         {
             <div class="alert alert-warning mb-2">No slots available for the selected date.</div>
         }
