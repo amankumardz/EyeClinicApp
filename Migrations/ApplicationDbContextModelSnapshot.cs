@@ -655,7 +655,7 @@ namespace EyeClinicApp.Migrations
                     b.HasOne("EyeClinicApp.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("EyeClinicApp.Models.TimeSlot", "TimeSlot")
                         .WithMany("Appointments")
