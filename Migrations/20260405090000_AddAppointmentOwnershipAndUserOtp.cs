@@ -73,8 +73,7 @@ namespace EyeClinicApp.Migrations
                 table: "Appointments",
                 column: "UserId",
                 principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                principalColumn: "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
