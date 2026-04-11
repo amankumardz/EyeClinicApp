@@ -408,6 +408,31 @@ BEGIN
     ALTER TABLE [dbo].[Appointments] ADD [UpdatedAtUtc] datetime2 NULL;
 END
 
+IF COL_LENGTH('dbo.Appointments', 'AssignedDoctorId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [AssignedDoctorId] nvarchar(450) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'PaymentMethod') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentMethod] DEFAULT('Clinic');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'PaymentStatus') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentStatus] DEFAULT('Pending');
+END
+
+IF COL_LENGTH('dbo.Appointments', 'RazorpayOrderId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [RazorpayOrderId] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.Appointments', 'RazorpayPaymentId') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Appointments] ADD [RazorpayPaymentId] nvarchar(120) NULL;
+END
+
 IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
 BEGIN
     ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
@@ -434,6 +459,22 @@ BEGIN
     ALTER TABLE [dbo].[Appointments] WITH NOCHECK
     ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
         FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_AssignedDoctorId' AND object_id = OBJECT_ID(N'[dbo].[Appointments]')
+)
+BEGIN
+    CREATE INDEX [IX_Appointments_AssignedDoctorId] ON [dbo].[Appointments]([AssignedDoctorId]);
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_AssignedDoctorId'
+)
+BEGIN
+    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+    ADD CONSTRAINT [FK_Appointments_AspNetUsers_AssignedDoctorId]
+        FOREIGN KEY([AssignedDoctorId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE SET NULL;
 END
 
 
