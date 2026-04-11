@@ -8,9 +8,9 @@ namespace EyeClinicApp.Data.Seed
     {
         private static readonly string[] RequiredRoles = [AppRoles.Admin, AppRoles.Doctor, AppRoles.Staff];
         private const string DefaultDoctorEmail = "doctor@eyeclinic.com";
-        private const string DefaultDoctorPassword = "Doctor@123";
+        private const string DefaultDoctorPassword = "Doctor@12345";
         private const string DefaultStaffEmail = "staff@eyeclinic.com";
-        private const string DefaultStaffPassword = "Staff@123";
+        private const string DefaultStaffPassword = "Staff@123456";
 
         public static async Task SeedAsync(IServiceProvider services)
         {
