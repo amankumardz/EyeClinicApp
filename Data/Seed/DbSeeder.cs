@@ -469,6 +469,36 @@ BEGIN
     );
 END
 
+IF COL_LENGTH('dbo.CartItems', 'RightEyeSph') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [RightEyeSph] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.CartItems', 'RightEyeCyl') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [RightEyeCyl] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.CartItems', 'RightEyeAxis') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [RightEyeAxis] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.CartItems', 'LeftEyeSph') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeSph] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.CartItems', 'LeftEyeCyl') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeCyl] nvarchar(120) NULL;
+END
+
+IF COL_LENGTH('dbo.CartItems', 'LeftEyeAxis') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeAxis] nvarchar(120) NULL;
+END
+
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_UserId' AND object_id = OBJECT_ID(N'[dbo].[Orders]')
 )
