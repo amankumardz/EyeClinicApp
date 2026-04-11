@@ -6,7 +6,7 @@ namespace EyeClinicApp.Data.Seed
 {
     public static class DbSeeder
     {
-        private const string AdminRoleName = "Admin";
+        private static readonly string[] RequiredRoles = [AppRoles.Admin, AppRoles.Doctor, AppRoles.Staff];
 
         public static async Task SeedAsync(IServiceProvider services)
         {
@@ -21,9 +21,12 @@ namespace EyeClinicApp.Data.Seed
             await context.Database.MigrateAsync();
             await EnsureSchemaCompatibilityAsync(context);
 
-            if (!await roleManager.RoleExistsAsync(AdminRoleName))
+            foreach (var role in RequiredRoles)
             {
-                await roleManager.CreateAsync(new IdentityRole(AdminRoleName));
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
             }
 
             var adminEmail = configuration["AdminBootstrap:Email"]?.Trim();
@@ -64,9 +67,9 @@ namespace EyeClinicApp.Data.Seed
                     await userManager.UpdateAsync(adminUser);
                 }
 
-                if (!await userManager.IsInRoleAsync(adminUser, AdminRoleName))
+                if (!await userManager.IsInRoleAsync(adminUser, AppRoles.Admin))
                 {
-                    await userManager.AddToRoleAsync(adminUser, AdminRoleName);
+                    await userManager.AddToRoleAsync(adminUser, AppRoles.Admin);
                 }
             }
 

@@ -1,0 +1,13 @@
+@model EyeClinicApp.Models.Appointment
+@{
+    ViewData["Title"] = "Appointment Payment Confirmation";
+}
+
+<div class="alert @(Model.PaymentStatus == EyeClinicApp.Models.AppointmentPaymentStatus.Paid ? "alert-success" : "alert-warning")">
+    <h4 class="mb-2">Appointment #@Model.Id</h4>
+    <p class="mb-1">Payment Method: <strong>@Model.PaymentMethod</strong></p>
+    <p class="mb-1">Payment Status: <strong>@Model.PaymentStatus</strong></p>
+    <p class="mb-0">Date: @Model.AppointmentDate.ToString("dd MMM yyyy")</p>
+</div>
+
+<a asp-action="MyAppointments" class="btn btn-primary">Go to My Appointments</a>

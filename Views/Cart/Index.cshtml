@@ -55,6 +55,19 @@ else
                             </form>
                         </div>
                     </div>
+                    <div class="border-top mt-3 pt-3">
+                        <form asp-action="UpdateLens" method="post" class="row g-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="rightEyeSph" value="@item.RightEyeSph" placeholder="OD SPH" /></div>
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="rightEyeCyl" value="@item.RightEyeCyl" placeholder="OD CYL" /></div>
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="rightEyeAxis" value="@item.RightEyeAxis" placeholder="OD Axis" /></div>
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="leftEyeSph" value="@item.LeftEyeSph" placeholder="OS SPH" /></div>
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="leftEyeCyl" value="@item.LeftEyeCyl" placeholder="OS CYL" /></div>
+                            <div class="col-md-2"><input class="form-control form-control-sm" name="leftEyeAxis" value="@item.LeftEyeAxis" placeholder="OS Axis" /></div>
+                            <div class="col-12"><button class="btn btn-outline-secondary btn-sm" type="submit">Save Lens Values</button></div>
+                        </form>
+                    </div>
                 </div>
             }
         </div>

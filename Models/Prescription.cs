@@ -2,22 +2,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EyeClinicApp.Models
 {
-    public class CartItem
+    public class Prescription
     {
         public int Id { get; set; }
 
         [Required]
-        public int GlassId { get; set; }
+        public int AppointmentId { get; set; }
 
-        public Glass? Glass { get; set; }
-
+        [Required]
         [MaxLength(450)]
-        public string? UserId { get; set; }
+        public string DoctorId { get; set; } = string.Empty;
 
-        public ApplicationUser? User { get; set; }
+        [MaxLength(2000)]
+        public string? Notes { get; set; }
 
-        [Range(1, 100)]
-        public int Quantity { get; set; }
+        [Required]
+        [MaxLength(500)]
+        public string FilePath { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? FileContentType { get; set; }
 
         [MaxLength(120)]
         public string? RightEyeSph { get; set; }
@@ -37,6 +41,9 @@ namespace EyeClinicApp.Models
         [MaxLength(120)]
         public string? LeftEyeAxis { get; set; }
 
-        public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public Appointment? Appointment { get; set; }
+        public ApplicationUser? Doctor { get; set; }
     }
 }

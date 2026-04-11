@@ -1,0 +1,18 @@
+@model EyeClinicApp.ViewModels.PrescriptionUploadViewModel
+<h2>Upload Prescription</h2>
+<form asp-action="UploadPrescription" method="post" enctype="multipart/form-data" class="card p-3">
+    @Html.AntiForgeryToken()
+    <input asp-for="AppointmentId" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-2"><label asp-for="File"></label><input asp-for="File" class="form-control" /></div>
+    <div class="mb-2"><label asp-for="Notes"></label><textarea asp-for="Notes" class="form-control"></textarea></div>
+    <div class="row g-2">
+        <div class="col-md-4"><input asp-for="RightEyeSph" class="form-control" placeholder="OD SPH" /></div>
+        <div class="col-md-4"><input asp-for="RightEyeCyl" class="form-control" placeholder="OD CYL" /></div>
+        <div class="col-md-4"><input asp-for="RightEyeAxis" class="form-control" placeholder="OD Axis" /></div>
+        <div class="col-md-4"><input asp-for="LeftEyeSph" class="form-control" placeholder="OS SPH" /></div>
+        <div class="col-md-4"><input asp-for="LeftEyeCyl" class="form-control" placeholder="OS CYL" /></div>
+        <div class="col-md-4"><input asp-for="LeftEyeAxis" class="form-control" placeholder="OS Axis" /></div>
+    </div>
+    <button class="btn btn-primary mt-3" type="submit">Upload</button>
+</form>

@@ -1,0 +1,78 @@
+@model EyeClinicApp.Models.Appointment
+@{
+    ViewData["Title"] = "Appointment Payment";
+}
+
+<h2>Appointment Payment</h2>
+<p>Appointment #@Model.Id - @Model.AppointmentDate.ToString("dd MMM yyyy")</p>
+<p>Status: <strong>@Model.PaymentStatus</strong></p>
+
+@if (Model.PaymentStatus == EyeClinicApp.Models.AppointmentPaymentStatus.Paid)
+{
+    <div class="alert alert-success">Payment already completed.</div>
+    <a asp-action="PaymentConfirmation" asp-route-id="@Model.Id" class="btn btn-primary">Continue</a>
+}
+else
+{
+    <button id="payBtn" class="btn btn-primary">Pay ₹500 via Razorpay</button>
+}
+
+@section Scripts {
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('payBtn')?.addEventListener('click', async function () {
+        const createRes = await fetch('@Url.Action("CreateOnlinePaymentOrder", "Appointment")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: new URLSearchParams({ appointmentId: '@Model.Id' })
+        });
+
+        const order = await createRes.json();
+        if (!createRes.ok) {
+            alert(order.error || 'Unable to initialize payment.');
+            return;
+        }
+
+        const options = {
+            key: order.key,
+            amount: order.amount,
+            currency: order.currency,
+            name: 'Noida Eye and Medical Centre',
+            order_id: order.razorpayOrderId,
+            handler: async function (response) {
+                const verifyRes = await fetch('@Url.Action("VerifyOnlinePayment", "Appointment")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        appointmentId: @Model.Id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpaySignature: response.razorpay_signature
+                    })
+                });
+
+                const data = await verifyRes.json();
+                if (verifyRes.ok && data.success) {
+                    window.location = data.redirectUrl;
+                } else {
+                    alert(data.error || 'Payment verification failed.');
+                }
+            },
+            prefill: {
+                name: '@Model.Name',
+                email: '@Model.Email',
+                contact: '@Model.PhoneNumber'
+            }
+        };
+
+        new Razorpay(options).open();
+    });
+</script>
+<form method="post">@Html.AntiForgeryToken()</form>
+}

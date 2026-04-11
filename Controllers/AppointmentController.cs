@@ -20,6 +20,9 @@ namespace EyeClinicApp.Controllers
         private readonly ILogger<AppointmentController> _logger;
         private readonly IEmailService _emailService;
         private readonly SmtpSettings _smtpSettings;
+        private readonly IAppointmentPaymentService _appointmentPaymentService;
+        private readonly IPrescriptionService _prescriptionService;
+        private readonly IConfiguration _configuration;
         private const string SelectedDateTempKey = "Booking.SelectedDate";
         private const string SelectedSlotTempKey = "Booking.SelectedSlotId";
         private const string ClinicName = "Noida Eye and Medical Centre";
@@ -30,12 +33,18 @@ namespace EyeClinicApp.Controllers
             ApplicationDbContext context,
             ILogger<AppointmentController> logger,
             IEmailService emailService,
-            IOptions<SmtpSettings> smtpOptions)
+            IOptions<SmtpSettings> smtpOptions,
+            IAppointmentPaymentService appointmentPaymentService,
+            IPrescriptionService prescriptionService,
+            IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
             _emailService = emailService;
             _smtpSettings = smtpOptions.Value;
+            _appointmentPaymentService = appointmentPaymentService;
+            _prescriptionService = prescriptionService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -171,7 +180,8 @@ namespace EyeClinicApp.Controllers
             {
                 AppointmentDate = selectedDateValue.Value,
                 TimeSlotId = slot.Id,
-                SelectedTimeSlotLabel = slot.GetDisplayLabel()
+                SelectedTimeSlotLabel = slot.GetDisplayLabel(),
+                RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty
             };
 
             return View(model);
@@ -214,6 +224,7 @@ namespace EyeClinicApp.Controllers
             if (!ModelState.IsValid)
             {
                 KeepSelectionInTempData(model.AppointmentDate, model.TimeSlotId);
+                model.RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty;
                 return View(model);
             }
 
@@ -230,6 +241,7 @@ namespace EyeClinicApp.Controllers
                 ModelState.AddModelError(nameof(BookAppointmentViewModel.TimeSlotId), "Selected slot was just booked. Please choose a different slot.");
                 await tx.RollbackAsync();
                 KeepSelectionInTempData(model.AppointmentDate, model.TimeSlotId);
+                model.RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty;
                 return View(model);
             }
 
@@ -242,6 +254,7 @@ namespace EyeClinicApp.Controllers
                 ModelState.AddModelError(nameof(BookAppointmentViewModel.TimeSlotId), "Selected slot is expired or unavailable now. Please choose another slot.");
                 await tx.RollbackAsync();
                 KeepSelectionInTempData(model.AppointmentDate, model.TimeSlotId);
+                model.RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty;
                 return View(model);
             }
 
@@ -254,6 +267,16 @@ namespace EyeClinicApp.Controllers
                 ModelState.AddModelError(string.Empty, "You already have an active (pending/approved) appointment.");
                 await tx.RollbackAsync();
                 KeepSelectionInTempData(model.AppointmentDate, model.TimeSlotId);
+                model.RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty;
+                return View(model);
+            }
+
+            if (!AppointmentPaymentMethod.All.Contains(model.PaymentMethod))
+            {
+                ModelState.AddModelError(nameof(BookAppointmentViewModel.PaymentMethod), "Please choose a valid payment method.");
+                KeepSelectionInTempData(model.AppointmentDate, model.TimeSlotId);
+                model.RazorpayKeyId = _configuration["Razorpay:KeyId"] ?? string.Empty;
+                await tx.RollbackAsync();
                 return View(model);
             }
 
@@ -276,6 +299,10 @@ namespace EyeClinicApp.Controllers
                 TimeSlotId = model.TimeSlotId,
                 UserId = userId,
                 Status = AppointmentStatus.Pending,
+                PaymentMethod = model.PaymentMethod,
+                PaymentStatus = model.PaymentMethod == AppointmentPaymentMethod.Online
+                    ? AppointmentPaymentStatus.Pending
+                    : AppointmentPaymentStatus.Pending,
                 CreatedAtUtc = DateTime.UtcNow
             };
 
@@ -299,6 +326,11 @@ namespace EyeClinicApp.Controllers
             TempData["Success"] = "Appointment booked successfully. Current status: Pending.";
             TempData.Remove(SelectedDateTempKey);
             TempData.Remove(SelectedSlotTempKey);
+            if (model.PaymentMethod == AppointmentPaymentMethod.Online)
+            {
+                return RedirectToAction(nameof(Payment), new { id = appointment.Id });
+            }
+
             return RedirectToAction(nameof(Book), new { date = model.AppointmentDate.ToString("yyyy-MM-dd") });
         }
 
@@ -315,12 +347,122 @@ namespace EyeClinicApp.Controllers
             var appointments = await _context.Appointments
                 .AsNoTracking()
                 .Include(a => a.TimeSlot)
+                .Include(a => a.Prescription)
                 .Where(a => a.UserId == userId)
                 .OrderByDescending(a => a.AppointmentDate)
                 .ThenByDescending(a => a.CreatedAtUtc)
                 .ToListAsync();
 
             return View(appointments);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Payment(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appointment = await _context.Appointments.AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+
+            return View(appointment);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOnlinePaymentOrder(int appointmentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == appointmentId && a.UserId == userId && a.PaymentMethod == AppointmentPaymentMethod.Online);
+            if (appointment is null)
+            {
+                return NotFound(new { error = "Appointment not found." });
+            }
+
+            var result = await _appointmentPaymentService.CreateOnlinePaymentOrderAsync(appointment);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { error = result.Error });
+            }
+
+            return Json(result.Payload);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyOnlinePayment([FromBody] AppointmentRazorpayVerificationRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == request.AppointmentId && a.UserId == userId && a.PaymentMethod == AppointmentPaymentMethod.Online);
+            if (appointment is null)
+            {
+                return NotFound(new { error = "Appointment not found." });
+            }
+
+            var result = await _appointmentPaymentService.VerifyOnlinePaymentAsync(
+                appointment,
+                request.RazorpayOrderId,
+                request.RazorpayPaymentId,
+                request.RazorpaySignature);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { error = result.Error });
+            }
+
+            return Json(new { success = true, redirectUrl = Url.Action(nameof(PaymentConfirmation), new { id = appointment.Id }) });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PaymentConfirmation(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appointment = await _context.Appointments.AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+
+            return View(appointment);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var model = await _prescriptionService.GetAppointmentDetailsForPatientAsync(id, userId);
+            if (model is null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadPrescription(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var file = await _prescriptionService.GetPrescriptionDownloadAsync(id, userId);
+            if (file is null)
+            {
+                return NotFound();
+            }
+
+            return File(file.Value.Content, file.Value.ContentType, file.Value.FileName);
         }
 
         private async Task<BookAppointmentSlotSelectionViewModel> BuildSlotSelectionViewModelAsync(DateTime selectedDate, int? selectedSlotId)
@@ -521,5 +663,13 @@ namespace EyeClinicApp.Controllers
                      </div>
                      """;
         }
+    }
+
+    public class AppointmentRazorpayVerificationRequest
+    {
+        public int AppointmentId { get; set; }
+        public string RazorpayPaymentId { get; set; } = string.Empty;
+        public string RazorpayOrderId { get; set; } = string.Empty;
+        public string RazorpaySignature { get; set; } = string.Empty;
     }
 }

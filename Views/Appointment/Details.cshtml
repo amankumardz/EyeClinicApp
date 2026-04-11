@@ -1,0 +1,29 @@
+@model EyeClinicApp.ViewModels.AppointmentDetailsViewModel
+@{
+    ViewData["Title"] = "Appointment Details";
+}
+
+<h2>Appointment Details</h2>
+<div class="card p-3 mb-3">
+    <p><strong>Patient:</strong> @Model.PatientName</p>
+    <p><strong>Date:</strong> @Model.AppointmentDate.ToString("dd MMM yyyy")</p>
+    <p><strong>Slot:</strong> @Model.TimeSlot</p>
+    <p><strong>Status:</strong> @Model.Status</p>
+    <p><strong>Payment:</strong> @Model.PaymentMethod (@Model.PaymentStatus)</p>
+</div>
+
+@if (Model.HasPrescription && Model.Prescription is not null)
+{
+    <div class="card p-3">
+        <h4>Prescription</h4>
+        <p><strong>Created:</strong> @Model.Prescription.CreatedAt.ToString("dd MMM yyyy")</p>
+        <p>@Model.Prescription.Notes</p>
+        <p><strong>OD:</strong> @Model.Prescription.RightEyeSph / @Model.Prescription.RightEyeCyl / @Model.Prescription.RightEyeAxis</p>
+        <p><strong>OS:</strong> @Model.Prescription.LeftEyeSph / @Model.Prescription.LeftEyeCyl / @Model.Prescription.LeftEyeAxis</p>
+        <a asp-action="DownloadPrescription" asp-route-id="@Model.AppointmentId" class="btn btn-outline-primary">Download Prescription PDF</a>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">Prescription has not been uploaded yet.</div>
+}

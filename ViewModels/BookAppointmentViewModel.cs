@@ -34,6 +34,12 @@ namespace EyeClinicApp.ViewModels
         [Required]
         public int TimeSlotId { get; set; }
 
+        [Required]
+        [Display(Name = "Payment Method")]
+        public string PaymentMethod { get; set; } = Models.AppointmentPaymentMethod.Clinic;
+
+        public string RazorpayKeyId { get; set; } = string.Empty;
+
         public string SelectedTimeSlotLabel { get; set; } = string.Empty;
     }
 

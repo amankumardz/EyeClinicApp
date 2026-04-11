@@ -24,6 +24,8 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserOtpService, UserOtpService>();
+builder.Services.AddScoped<IAppointmentPaymentService, AppointmentPaymentService>();
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
