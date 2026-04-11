@@ -41,6 +41,23 @@ namespace EyeClinicApp.Models
         [MaxLength(50)]
         public string Status { get; set; } = AppointmentStatus.Pending;
 
+        [Required]
+        [MaxLength(30)]
+        public string PaymentStatus { get; set; } = AppointmentPaymentStatus.Pending;
+
+        [Required]
+        [MaxLength(30)]
+        public string PaymentMethod { get; set; } = AppointmentPaymentMethod.Clinic;
+
+        [MaxLength(120)]
+        public string? RazorpayPaymentId { get; set; }
+
+        [MaxLength(120)]
+        public string? RazorpayOrderId { get; set; }
+
+        [MaxLength(450)]
+        public string? AssignedDoctorId { get; set; }
+
         [Timestamp]
         public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
@@ -56,5 +73,7 @@ namespace EyeClinicApp.Models
         public TimeSlot? TimeSlot { get; set; }
         public ApplicationUser? ModifiedByAdmin { get; set; }
         public ApplicationUser? User { get; set; }
+        public ApplicationUser? AssignedDoctor { get; set; }
+        public Prescription? Prescription { get; set; }
     }
 }

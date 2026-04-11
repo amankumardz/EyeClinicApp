@@ -1,0 +1,17 @@
+@model IEnumerable<EyeClinicApp.Models.Appointment>
+<h2>Staff Dashboard</h2>
+<table class="table table-striped">
+    <thead><tr><th>Date</th><th>Patient</th><th>Slot</th><th>Status</th><th>Payment</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.AppointmentDate.ToString("dd MMM yyyy")</td>
+            <td>@item.Name</td>
+            <td>@item.TimeSlot?.GetDisplayLabel()</td>
+            <td>@item.Status</td>
+            <td>@item.PaymentMethod (@item.PaymentStatus)</td>
+        </tr>
+    }
+    </tbody>
+</table>

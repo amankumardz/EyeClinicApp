@@ -18,6 +18,7 @@ namespace EyeClinicApp.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<UserOtp> UserOtps { get; set; }
+        public DbSet<Prescription> Prescriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -58,7 +59,16 @@ namespace EyeClinicApp.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Appointment>()
+                .HasOne(a => a.AssignedDoctor)
+                .WithMany()
+                .HasForeignKey(a => a.AssignedDoctorId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Appointment>()
                 .HasIndex(a => new { a.UserId, a.AppointmentDate });
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => a.AssignedDoctorId);
 
             builder.Entity<Glass>()
                 .Property(g => g.Price)
@@ -112,6 +122,22 @@ namespace EyeClinicApp.Data
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Prescription>()
+                .HasOne(p => p.Appointment)
+                .WithOne(a => a.Prescription)
+                .HasForeignKey<Prescription>(p => p.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Prescription>()
+                .HasOne(p => p.Doctor)
+                .WithMany()
+                .HasForeignKey(p => p.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Prescription>()
+                .HasIndex(p => p.AppointmentId)
+                .IsUnique();
 
             builder.Entity<UserOtp>()
                 .HasIndex(o => new { o.UserId, o.Purpose, o.ExpiryTime });
