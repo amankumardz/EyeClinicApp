@@ -62,7 +62,7 @@ namespace EyeClinicApp.Data
                 .HasOne(a => a.AssignedDoctor)
                 .WithMany()
                 .HasForeignKey(a => a.AssignedDoctorId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.UserId, a.AppointmentDate });
