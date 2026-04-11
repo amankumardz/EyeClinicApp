@@ -7,6 +7,10 @@ namespace EyeClinicApp.Data.Seed
     public static class DbSeeder
     {
         private static readonly string[] RequiredRoles = [AppRoles.Admin, AppRoles.Doctor, AppRoles.Staff];
+        private const string DefaultDoctorEmail = "doctor@eyeclinic.com";
+        private const string DefaultDoctorPassword = "Doctor@123";
+        private const string DefaultStaffEmail = "staff@eyeclinic.com";
+        private const string DefaultStaffPassword = "Staff@123";
 
         public static async Task SeedAsync(IServiceProvider services)
         {
@@ -31,47 +35,21 @@ namespace EyeClinicApp.Data.Seed
 
             var adminEmail = configuration["AdminBootstrap:Email"]?.Trim();
             var adminPassword = configuration["AdminBootstrap:Password"];
+            await EnsureBootstrapAdminAsync(userManager, logger, adminEmail, adminPassword);
 
-            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-            {
-                logger.LogWarning("Admin bootstrap skipped. Configure AdminBootstrap__Email and AdminBootstrap__Password environment variables for production.");
-            }
-            else if (!IsStrongBootstrapPassword(adminPassword))
-            {
-                logger.LogWarning("Admin bootstrap skipped because AdminBootstrap password is weak. It must be at least 12 chars with upper, lower, digit and symbol.");
-            }
-            else
-            {
-                var adminUser = await userManager.FindByEmailAsync(adminEmail);
-                if (adminUser is null)
-                {
-                    adminUser = new ApplicationUser
-                    {
-                        UserName = adminEmail,
-                        Email = adminEmail,
-                        FullName = "System Administrator",
-                        EmailConfirmed = true,
-                        LockoutEnabled = true
-                    };
+            var doctorUser = await EnsureUserInRoleAsync(
+                userManager,
+                email: DefaultDoctorEmail,
+                password: DefaultDoctorPassword,
+                role: AppRoles.Doctor,
+                fullName: "Dr. Default Physician");
 
-                    var createResult = await userManager.CreateAsync(adminUser, adminPassword);
-                    if (!createResult.Succeeded)
-                    {
-                        var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
-                        throw new InvalidOperationException($"Failed to create admin user: {errors}");
-                    }
-                }
-                else if (!adminUser.EmailConfirmed)
-                {
-                    adminUser.EmailConfirmed = true;
-                    await userManager.UpdateAsync(adminUser);
-                }
-
-                if (!await userManager.IsInRoleAsync(adminUser, AppRoles.Admin))
-                {
-                    await userManager.AddToRoleAsync(adminUser, AppRoles.Admin);
-                }
-            }
+            await EnsureUserInRoleAsync(
+                userManager,
+                email: DefaultStaffEmail,
+                password: DefaultStaffPassword,
+                role: AppRoles.Staff,
+                fullName: "Default Front Desk Staff");
 
             var requiredSlots = GenerateStandardSlots().ToList();
             var existingSlots = await context.TimeSlots.ToListAsync();
@@ -229,6 +207,7 @@ namespace EyeClinicApp.Data.Seed
                         AppointmentDate = DateTime.UtcNow.Date.AddDays(2),
                         TimeSlotId = firstSlotId,
                         Status = AppointmentStatus.Pending,
+                        AssignedDoctorId = doctorUser.Id,
                         CreatedAtUtc = DateTime.UtcNow
                     },
                     new Appointment
@@ -240,13 +219,115 @@ namespace EyeClinicApp.Data.Seed
                         AppointmentDate = DateTime.UtcNow.Date.AddDays(-2),
                         TimeSlotId = firstSlotId,
                         Status = AppointmentStatus.Completed,
+                        AssignedDoctorId = doctorUser.Id,
                         CreatedAtUtc = DateTime.UtcNow.AddDays(-10),
                         UpdatedAtUtc = DateTime.UtcNow.AddDays(-2)
                     }
                 });
             }
 
+            var unassignedSampleAppointments = await context.Appointments
+                .Where(a => a.AssignedDoctorId == null && (a.Email == adminEmail || a.Email == "john@example.com"))
+                .ToListAsync();
+
+            foreach (var appointment in unassignedSampleAppointments)
+            {
+                appointment.AssignedDoctorId = doctorUser.Id;
+            }
+
             await context.SaveChangesAsync();
+        }
+
+        private static async Task<ApplicationUser?> EnsureBootstrapAdminAsync(
+            UserManager<ApplicationUser> userManager,
+            ILogger logger,
+            string? adminEmail,
+            string? adminPassword)
+        {
+            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            {
+                logger.LogWarning("Admin bootstrap skipped. Configure AdminBootstrap__Email and AdminBootstrap__Password environment variables for production.");
+                return null;
+            }
+
+            if (!IsStrongBootstrapPassword(adminPassword))
+            {
+                logger.LogWarning("Admin bootstrap skipped because AdminBootstrap password is weak. It must be at least 12 chars with upper, lower, digit and symbol.");
+                return null;
+            }
+
+            return await EnsureUserInRoleAsync(
+                userManager,
+                email: adminEmail,
+                password: adminPassword,
+                role: AppRoles.Admin,
+                fullName: "System Administrator");
+        }
+
+        private static async Task<ApplicationUser> EnsureUserInRoleAsync(
+            UserManager<ApplicationUser> userManager,
+            string email,
+            string password,
+            string role,
+            string fullName)
+        {
+            var normalizedEmail = email.Trim();
+            var user = await userManager.FindByEmailAsync(normalizedEmail);
+            if (user is null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = normalizedEmail,
+                    Email = normalizedEmail,
+                    FullName = fullName,
+                    EmailConfirmed = true,
+                    LockoutEnabled = true
+                };
+
+                var createResult = await userManager.CreateAsync(user, password);
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to create seeded user '{normalizedEmail}': {errors}");
+                }
+            }
+            else
+            {
+                var shouldUpdate = false;
+                if (!user.EmailConfirmed)
+                {
+                    user.EmailConfirmed = true;
+                    shouldUpdate = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(user.FullName))
+                {
+                    user.FullName = fullName;
+                    shouldUpdate = true;
+                }
+
+                if (shouldUpdate)
+                {
+                    var updateResult = await userManager.UpdateAsync(user);
+                    if (!updateResult.Succeeded)
+                    {
+                        var errors = string.Join("; ", updateResult.Errors.Select(e => e.Description));
+                        throw new InvalidOperationException($"Failed to update seeded user '{normalizedEmail}': {errors}");
+                    }
+                }
+            }
+
+            if (!await userManager.IsInRoleAsync(user, role))
+            {
+                var roleResult = await userManager.AddToRoleAsync(user, role);
+                if (!roleResult.Succeeded)
+                {
+                    var errors = string.Join("; ", roleResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to assign role '{role}' to '{normalizedEmail}': {errors}");
+                }
+            }
+
+            return user;
         }
 
         private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
