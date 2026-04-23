@@ -124,6 +124,9 @@ namespace EyeClinicApp.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Prescription>()
+                .ToTable("Prescriptions");
+
+            builder.Entity<Prescription>()
                 .HasOne(p => p.Appointment)
                 .WithOne(a => a.Prescription)
                 .HasForeignKey<Prescription>(p => p.AppointmentId)
