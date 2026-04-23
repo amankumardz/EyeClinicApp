@@ -56,14 +56,10 @@ namespace EyeClinicApp.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(
-                """
-                IF OBJECT_ID(N'[dbo].[Prescription]', N'U') IS NULL
-                   AND OBJECT_ID(N'[dbo].[Prescriptions]', N'U') IS NOT NULL
-                BEGIN
-                    EXEC sp_rename N'[dbo].[Prescriptions]', N'Prescription';
-                END
-                """);
+            // Intentionally no-op:
+            // This migration is a compatibility hotfix for schema drift. Rolling back should not
+            // rename a valid [dbo].[Prescriptions] table to [dbo].[Prescription], because the
+            // application model maps to [dbo].[Prescriptions].
         }
     }
 }
