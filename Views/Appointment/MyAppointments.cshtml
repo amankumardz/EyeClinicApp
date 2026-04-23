@@ -68,6 +68,11 @@
                             </a>
                             <a href="tel:+918076213144" class="btn btn-success">Call Clinic</a>
                             <a asp-action="Details" asp-route-id="@appointment.Id" class="btn btn-outline-primary">View Details</a>
+                            @if (appointment.Prescription is not null)
+                            {
+                                <a asp-action="Details" asp-route-id="@appointment.Id" class="btn btn-outline-success">View Prescription</a>
+                                <a asp-controller="Prescription" asp-action="Download" asp-route-id="@appointment.Prescription.Id" class="btn btn-success">Download Prescription</a>
+                            }
                             @if (appointment.PaymentMethod == AppointmentPaymentMethod.Online && appointment.PaymentStatus != AppointmentPaymentStatus.Paid)
                             {
                                 <a asp-action="Payment" asp-route-id="@appointment.Id" class="btn btn-warning">Complete Online Payment</a>

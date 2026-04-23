@@ -16,7 +16,14 @@
             Welcome, @displayName
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-            <li><a class="dropdown-item" asp-controller="Appointment" asp-action="MyAppointments">My Appointments</a></li>
+            @if (User.IsInRole(AppRoles.Doctor))
+            {
+                <li><a class="dropdown-item" asp-controller="Doctor" asp-action="MyAppointments">Doctor Appointments</a></li>
+            }
+            else
+            {
+                <li><a class="dropdown-item" asp-controller="Appointment" asp-action="MyAppointments">My Appointments</a></li>
+            }
             <li><a class="dropdown-item" asp-controller="Order" asp-action="MyOrders">My Orders</a></li>
             <li><a class="dropdown-item" asp-controller="Cart" asp-action="Index">My Cart</a></li>
             <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Profile</a></li>

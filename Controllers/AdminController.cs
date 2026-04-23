@@ -150,6 +150,7 @@ namespace EyeClinicApp.Controllers
             var appointments = await _context.Appointments
                 .AsNoTracking()
                 .Include(a => a.TimeSlot)
+                .Include(a => a.AssignedDoctor)
                 .OrderByDescending(a => a.AppointmentDate)
                 .ThenBy(a => a.TimeSlot!.StartTime)
                 .ToListAsync();
@@ -178,6 +179,91 @@ namespace EyeClinicApp.Controllers
             appointment.ModifiedByAdminId = _userManager.GetUserId(User);
 
             await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ManageAppointments));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignDoctor(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .AsNoTracking()
+                .Include(a => a.TimeSlot)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(appointment.AssignedDoctorId))
+            {
+                TempData["Error"] = "Doctor is already assigned for this appointment.";
+                return RedirectToAction(nameof(ManageAppointments));
+            }
+
+            if (appointment.Status == AppointmentStatus.Completed)
+            {
+                TempData["Error"] = "Completed appointments cannot be reassigned.";
+                return RedirectToAction(nameof(ManageAppointments));
+            }
+
+            var model = new AssignDoctorViewModel
+            {
+                AppointmentId = appointment.Id,
+                PatientName = appointment.Name,
+                AppointmentDate = appointment.AppointmentDate,
+                TimeSlotLabel = appointment.TimeSlot?.GetDisplayLabel() ?? "N/A",
+                DoctorOptions = await GetDoctorOptionsAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignDoctor(AssignDoctorViewModel model)
+        {
+            model.DoctorOptions = await GetDoctorOptionsAsync();
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .FirstOrDefaultAsync(a => a.Id == model.AppointmentId);
+
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(appointment.AssignedDoctorId))
+            {
+                ModelState.AddModelError(string.Empty, "Doctor is already assigned for this appointment.");
+                return View(model);
+            }
+
+            if (appointment.Status == AppointmentStatus.Completed)
+            {
+                ModelState.AddModelError(string.Empty, "Completed appointments cannot be reassigned.");
+                return View(model);
+            }
+
+            var doctor = await _userManager.FindByIdAsync(model.SelectedDoctorId);
+            if (doctor is null || !await _userManager.IsInRoleAsync(doctor, AppRoles.Doctor))
+            {
+                ModelState.AddModelError(nameof(AssignDoctorViewModel.SelectedDoctorId), "Select a valid doctor.");
+                return View(model);
+            }
+
+            appointment.AssignedDoctorId = doctor.Id;
+            appointment.UpdatedAtUtc = DateTime.UtcNow;
+            appointment.ModifiedByAdminId = _userManager.GetUserId(User);
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Doctor assigned successfully.";
             return RedirectToAction(nameof(ManageAppointments));
         }
 
@@ -333,6 +419,17 @@ namespace EyeClinicApp.Controllers
             return slots
                 .Where(s => !reservedIds.Contains(s.Id))
                 .Select(s => new SelectListItem(s.GetDisplayLabel(), s.Id.ToString()))
+                .ToList();
+        }
+
+        private async Task<IReadOnlyCollection<SelectListItem>> GetDoctorOptionsAsync()
+        {
+            var doctors = await _userManager.GetUsersInRoleAsync(AppRoles.Doctor);
+            return doctors
+                .OrderBy(d => d.FullName ?? d.UserName)
+                .Select(d => new SelectListItem(
+                    string.IsNullOrWhiteSpace(d.FullName) ? (d.UserName ?? d.Email ?? "Doctor") : d.FullName,
+                    d.Id))
                 .ToList();
         }
 

@@ -11,7 +11,6 @@ namespace EyeClinicApp.ViewModels
         public string? Notes { get; set; }
 
         [Display(Name = "Prescription File")]
-        [Required]
         public IFormFile? File { get; set; }
 
         [Display(Name = "Right Eye SPH")]
@@ -37,6 +36,21 @@ namespace EyeClinicApp.ViewModels
         [Display(Name = "Left Eye Axis")]
         [MaxLength(120)]
         public string? LeftEyeAxis { get; set; }
+    }
+
+    public class AssignDoctorViewModel
+    {
+        public int AppointmentId { get; set; }
+        public string PatientName { get; set; } = string.Empty;
+        public DateTime AppointmentDate { get; set; }
+        public string TimeSlotLabel { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Doctor")]
+        public string SelectedDoctorId { get; set; } = string.Empty;
+
+        public IReadOnlyCollection<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> DoctorOptions { get; set; }
+            = Array.Empty<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
     }
 
     public class AppointmentDetailsViewModel

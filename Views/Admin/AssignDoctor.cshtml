@@ -1,0 +1,31 @@
+@model EyeClinicApp.ViewModels.AssignDoctorViewModel
+@{
+    ViewData["Title"] = "Assign Doctor";
+}
+
+<h2>Assign Doctor</h2>
+
+<div class="card p-3 mb-3">
+    <p class="mb-1"><strong>Patient:</strong> @Model.PatientName</p>
+    <p class="mb-1"><strong>Date:</strong> @Model.AppointmentDate.ToString("dd MMM yyyy")</p>
+    <p class="mb-0"><strong>Slot:</strong> @Model.TimeSlotLabel</p>
+</div>
+
+<form asp-action="AssignDoctor" method="post" class="card p-3">
+    @Html.AntiForgeryToken()
+    <input asp-for="AppointmentId" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="SelectedDoctorId" class="form-label"></label>
+        <select asp-for="SelectedDoctorId" asp-items="Model.DoctorOptions" class="form-select">
+            <option value="">-- Select doctor --</option>
+        </select>
+        <span asp-validation-for="SelectedDoctorId" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Assign</button>
+        <a asp-action="ManageAppointments" class="btn btn-outline-secondary">Back</a>
+    </div>
+</form>

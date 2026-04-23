@@ -31,6 +31,16 @@
             </div>
         </div>
 
+        @if (TempData["Success"] is string successMessage)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        @if (TempData["Error"] is string errorMessage)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
         @if (Model is null || !Model.Any())
         {
             <div class="alert alert-info">No appointments are currently scheduled.</div>
@@ -73,6 +83,14 @@
                                                 <input type="hidden" name="status" value="Rejected" />
                                                 <button class="btn btn-sm btn-danger" type="submit">Reject</button>
                                             </form>
+                                            @if (string.IsNullOrWhiteSpace(appointment.AssignedDoctorId) && appointment.Status != EyeClinicApp.Models.AppointmentStatus.Completed)
+                                            {
+                                                <a asp-action="AssignDoctor" asp-route-appointmentId="@appointment.Id" class="btn btn-sm btn-primary">Assign Doctor</a>
+                                            }
+                                            else if (!string.IsNullOrWhiteSpace(appointment.AssignedDoctorId))
+                                            {
+                                                <span class="btn btn-sm btn-outline-secondary disabled">Assigned</span>
+                                            }
                                             <a asp-action="EditAppointment" asp-route-id="@appointment.Id" class="btn btn-sm btn-soft">Modify</a>
                                         </div>
                                     </td>
