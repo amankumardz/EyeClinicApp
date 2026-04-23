@@ -1,6 +1,7 @@
 using EyeClinicApp.Data;
 using EyeClinicApp.Models;
 using EyeClinicApp.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -31,19 +32,17 @@ namespace EyeClinicApp.Services
 
         public async Task<(bool IsSuccess, string? Error, Prescription? Prescription)> UploadAsync(PrescriptionUploadViewModel model, string doctorId, CancellationToken cancellationToken = default)
         {
-            if (model.File is null || model.File.Length == 0)
-            {
-                return (false, "Prescription file is required.", null);
-            }
+            var hasStructuredValues = !string.IsNullOrWhiteSpace(model.Notes)
+                || !string.IsNullOrWhiteSpace(model.RightEyeSph)
+                || !string.IsNullOrWhiteSpace(model.RightEyeCyl)
+                || !string.IsNullOrWhiteSpace(model.RightEyeAxis)
+                || !string.IsNullOrWhiteSpace(model.LeftEyeSph)
+                || !string.IsNullOrWhiteSpace(model.LeftEyeCyl)
+                || !string.IsNullOrWhiteSpace(model.LeftEyeAxis);
 
-            if (model.File.Length > MaxFileSizeBytes)
+            if (model.File is null && !hasStructuredValues)
             {
-                return (false, "Maximum upload size is 5 MB.", null);
-            }
-
-            if (!AllowedTypes.Contains(model.File.ContentType))
-            {
-                return (false, "Only PDF, PNG, and JPEG files are allowed.", null);
+                return (false, "Provide either prescription details or upload a file.", null);
             }
 
             var appointment = await _context.Appointments
@@ -60,16 +59,51 @@ namespace EyeClinicApp.Services
                 return (false, "Prescription already uploaded for this appointment.", null);
             }
 
+            if (appointment.AssignedDoctorId != doctorId)
+            {
+                return (false, "Only the assigned doctor can upload a prescription.", null);
+            }
+
             var uploadsRoot = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
             Directory.CreateDirectory(uploadsRoot);
+            string fileContentType;
+            string safeFileName;
 
-            var extension = Path.GetExtension(model.File.FileName);
-            var safeFileName = $"prescription_{appointment.Id}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{extension}";
-            var fullPath = Path.Combine(uploadsRoot, safeFileName);
-
-            await using (var fileStream = new FileStream(fullPath, FileMode.CreateNew))
+            if (model.File is not null)
             {
-                await model.File.CopyToAsync(fileStream, cancellationToken);
+                if (model.File.Length == 0)
+                {
+                    return (false, "Uploaded file is empty.", null);
+                }
+
+                if (model.File.Length > MaxFileSizeBytes)
+                {
+                    return (false, "Maximum upload size is 5 MB.", null);
+                }
+
+                if (!AllowedTypes.Contains(model.File.ContentType))
+                {
+                    return (false, "Only PDF, PNG, and JPEG files are allowed.", null);
+                }
+
+                var extension = Path.GetExtension(model.File.FileName);
+                safeFileName = $"prescription_{appointment.Id}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{extension}";
+                var fullPath = Path.Combine(uploadsRoot, safeFileName);
+
+                await using (var fileStream = new FileStream(fullPath, FileMode.CreateNew))
+                {
+                    await model.File.CopyToAsync(fileStream, cancellationToken);
+                }
+
+                fileContentType = model.File.ContentType;
+            }
+            else
+            {
+                safeFileName = $"prescription_{appointment.Id}_{DateTime.UtcNow:yyyyMMddHHmmssfff}.pdf";
+                var fullPath = Path.Combine(uploadsRoot, safeFileName);
+                var generatedPdf = BuildPrescriptionPdfBytes(appointment, model);
+                await File.WriteAllBytesAsync(fullPath, generatedPdf, cancellationToken);
+                fileContentType = "application/pdf";
             }
 
             var prescription = new Prescription
@@ -78,7 +112,7 @@ namespace EyeClinicApp.Services
                 DoctorId = doctorId,
                 Notes = model.Notes?.Trim(),
                 FilePath = Path.Combine("uploads", "prescriptions", safeFileName).Replace("\\", "/"),
-                FileContentType = model.File.ContentType,
+                FileContentType = fileContentType,
                 RightEyeSph = model.RightEyeSph,
                 RightEyeCyl = model.RightEyeCyl,
                 RightEyeAxis = model.RightEyeAxis,
@@ -92,6 +126,30 @@ namespace EyeClinicApp.Services
             await _context.SaveChangesAsync(cancellationToken);
 
             return (true, null, prescription);
+        }
+
+        private static byte[] BuildPrescriptionPdfBytes(Appointment appointment, PrescriptionUploadViewModel model)
+        {
+            var content = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(24);
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(8);
+                        col.Item().Text("Patient Prescription").FontSize(18).Bold();
+                        col.Item().Text($"Patient: {appointment.Name}");
+                        col.Item().Text($"Appointment Date: {appointment.AppointmentDate:dd MMM yyyy}");
+                        col.Item().Text($"Generated: {DateTime.UtcNow:dd MMM yyyy HH:mm} UTC");
+                        col.Item().PaddingTop(8).Text($"Notes: {model.Notes ?? "N/A"}");
+                        col.Item().Text($"OD SPH/CYL/Axis: {model.RightEyeSph ?? "-"} / {model.RightEyeCyl ?? "-"} / {model.RightEyeAxis ?? "-"}");
+                        col.Item().Text($"OS SPH/CYL/Axis: {model.LeftEyeSph ?? "-"} / {model.LeftEyeCyl ?? "-"} / {model.LeftEyeAxis ?? "-"}");
+                    });
+                });
+            });
+
+            return content.GeneratePdf();
         }
 
         public async Task<AppointmentDetailsViewModel?> GetAppointmentDetailsForPatientAsync(int appointmentId, string patientUserId, CancellationToken cancellationToken = default)
