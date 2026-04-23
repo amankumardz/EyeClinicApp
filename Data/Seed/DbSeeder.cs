@@ -23,7 +23,7 @@ namespace EyeClinicApp.Data.Seed
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
             await context.Database.MigrateAsync();
-            await EnsureSchemaCompatibilityAsync(context);
+            //await EnsureSchemaCompatibilityAsync(context);
 
             foreach (var role in RequiredRoles)
             {
@@ -330,378 +330,378 @@ namespace EyeClinicApp.Data.Seed
             return user;
         }
 
-        private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
-        {
-            // Safety net for environments where migration history is out-of-sync with actual objects.
-            // This keeps startup resilient on partially upgraded databases.
-            await context.Database.ExecuteSqlRawAsync(@"
-IF OBJECT_ID(N'[dbo].[TimeSlots]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[TimeSlots](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [StartTime] time NOT NULL,
-        [EndTime] time NOT NULL,
-        [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning'),
-        [IsActive] bit NOT NULL CONSTRAINT [DF_TimeSlots_IsActive] DEFAULT(1),
-        [Label] nvarchar(100) NULL,
-        CONSTRAINT [PK_TimeSlots] PRIMARY KEY ([Id])
-    );
-END
+//        private static async Task EnsureSchemaCompatibilityAsync(ApplicationDbContext context)
+//        {
+//            // Safety net for environments where migration history is out-of-sync with actual objects.
+//            // This keeps startup resilient on partially upgraded databases.
+//            await context.Database.ExecuteSqlRawAsync(@"
+//IF OBJECT_ID(N'[dbo].[TimeSlots]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[TimeSlots](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [StartTime] time NOT NULL,
+//        [EndTime] time NOT NULL,
+//        [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning'),
+//        [IsActive] bit NOT NULL CONSTRAINT [DF_TimeSlots_IsActive] DEFAULT(1),
+//        [Label] nvarchar(100) NULL,
+//        CONSTRAINT [PK_TimeSlots] PRIMARY KEY ([Id])
+//    );
+//END
 
-IF COL_LENGTH('dbo.TimeSlots', 'Shift') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[TimeSlots] ADD [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning');
-END
+//IF COL_LENGTH('dbo.TimeSlots', 'Shift') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[TimeSlots] ADD [Shift] nvarchar(20) NOT NULL CONSTRAINT [DF_TimeSlots_Shift] DEFAULT('Morning');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'TimeSlotId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [TimeSlotId] INT NOT NULL CONSTRAINT [DF_Appointments_TimeSlotId] DEFAULT(1);
-END
+//IF COL_LENGTH('dbo.Appointments', 'TimeSlotId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [TimeSlotId] INT NOT NULL CONSTRAINT [DF_Appointments_TimeSlotId] DEFAULT(1);
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'Name') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [Name] nvarchar(150) NOT NULL CONSTRAINT [DF_Appointments_Name] DEFAULT('Walk-in Client');
-END
+//IF COL_LENGTH('dbo.Appointments', 'Name') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [Name] nvarchar(150) NOT NULL CONSTRAINT [DF_Appointments_Name] DEFAULT('Walk-in Client');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'PhoneNumber') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [PhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_PhoneNumber] DEFAULT('0000000000');
-END
+//IF COL_LENGTH('dbo.Appointments', 'PhoneNumber') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [PhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_PhoneNumber] DEFAULT('0000000000');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'NormalizedPhoneNumber') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [NormalizedPhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_NormalizedPhoneNumber] DEFAULT('0000000000');
-END
+//IF COL_LENGTH('dbo.Appointments', 'NormalizedPhoneNumber') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [NormalizedPhoneNumber] nvarchar(25) NOT NULL CONSTRAINT [DF_Appointments_NormalizedPhoneNumber] DEFAULT('0000000000');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'Email') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [Email] nvarchar(150) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'Email') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [Email] nvarchar(150) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'Age') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [Age] int NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'Age') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [Age] int NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'ReasonForVisit') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [ReasonForVisit] nvarchar(1000) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'ReasonForVisit') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [ReasonForVisit] nvarchar(1000) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'Address') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [Address] nvarchar(500) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'Address') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [Address] nvarchar(500) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'ModifiedByAdminId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [ModifiedByAdminId] nvarchar(450) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'ModifiedByAdminId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [ModifiedByAdminId] nvarchar(450) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'CreatedAtUtc') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [CreatedAtUtc] datetime2 NOT NULL CONSTRAINT [DF_Appointments_CreatedAtUtc] DEFAULT(GETUTCDATE());
-END
+//IF COL_LENGTH('dbo.Appointments', 'CreatedAtUtc') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [CreatedAtUtc] datetime2 NOT NULL CONSTRAINT [DF_Appointments_CreatedAtUtc] DEFAULT(GETUTCDATE());
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'UpdatedAtUtc') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [UpdatedAtUtc] datetime2 NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'UpdatedAtUtc') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [UpdatedAtUtc] datetime2 NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'AssignedDoctorId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [AssignedDoctorId] nvarchar(450) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'AssignedDoctorId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [AssignedDoctorId] nvarchar(450) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'PaymentMethod') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentMethod] DEFAULT('Clinic');
-END
+//IF COL_LENGTH('dbo.Appointments', 'PaymentMethod') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentMethod] DEFAULT('Clinic');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'PaymentStatus') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentStatus] DEFAULT('Pending');
-END
+//IF COL_LENGTH('dbo.Appointments', 'PaymentStatus') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Appointments_PaymentStatus] DEFAULT('Pending');
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'RazorpayOrderId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [RazorpayOrderId] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'RazorpayOrderId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [RazorpayOrderId] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'RazorpayPaymentId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [RazorpayPaymentId] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'RazorpayPaymentId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [RazorpayPaymentId] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
-END
+//IF COL_LENGTH('dbo.Appointments', 'RowVersion') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] ADD [RowVersion] rowversion NULL;
+//END
 
-IF COL_LENGTH('dbo.Glasses', 'Category') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Glasses] ADD [Category] nvarchar(20) NOT NULL CONSTRAINT [DF_Glasses_Category] DEFAULT('Men');
-END
+//IF COL_LENGTH('dbo.Glasses', 'Category') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Glasses] ADD [Category] nvarchar(20) NOT NULL CONSTRAINT [DF_Glasses_Category] DEFAULT('Men');
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_TimeSlots_TimeSlotId'
-)
-BEGIN
-    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
-    ADD CONSTRAINT [FK_Appointments_TimeSlots_TimeSlotId]
-        FOREIGN KEY([TimeSlotId]) REFERENCES [dbo].[TimeSlots]([Id]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_TimeSlots_TimeSlotId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+//    ADD CONSTRAINT [FK_Appointments_TimeSlots_TimeSlotId]
+//        FOREIGN KEY([TimeSlotId]) REFERENCES [dbo].[TimeSlots]([Id]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_ModifiedByAdminId'
-)
-BEGIN
-    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
-    ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
-        FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_ModifiedByAdminId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+//    ADD CONSTRAINT [FK_Appointments_AspNetUsers_ModifiedByAdminId]
+//        FOREIGN KEY([ModifiedByAdminId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_AssignedDoctorId' AND object_id = OBJECT_ID(N'[dbo].[Appointments]')
-)
-BEGIN
-    CREATE INDEX [IX_Appointments_AssignedDoctorId] ON [dbo].[Appointments]([AssignedDoctorId]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_AssignedDoctorId' AND object_id = OBJECT_ID(N'[dbo].[Appointments]')
+//)
+//BEGIN
+//    CREATE INDEX [IX_Appointments_AssignedDoctorId] ON [dbo].[Appointments]([AssignedDoctorId]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_AssignedDoctorId'
-)
-BEGIN
-    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
-    ADD CONSTRAINT [FK_Appointments_AspNetUsers_AssignedDoctorId]
-        FOREIGN KEY([AssignedDoctorId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE SET NULL;
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Appointments_AspNetUsers_AssignedDoctorId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[Appointments] WITH NOCHECK
+//    ADD CONSTRAINT [FK_Appointments_AspNetUsers_AssignedDoctorId]
+//        FOREIGN KEY([AssignedDoctorId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE SET NULL;
+//END
 
 
-IF OBJECT_ID(N'[dbo].[PersonProfiles]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[PersonProfiles](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [Name] nvarchar(150) NOT NULL,
-        [Role] nvarchar(30) NOT NULL,
-        [Qualification] nvarchar(200) NULL,
-        [ExperienceYears] int NOT NULL,
-        [Achievements] nvarchar(2000) NULL,
-        [Bio] nvarchar(2000) NULL,
-        [ProfileImageBase64] nvarchar(max) NULL,
-        [IsActive] bit NOT NULL CONSTRAINT [DF_PersonProfiles_IsActive] DEFAULT(1),
-        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_PersonProfiles_CreatedAt] DEFAULT(GETUTCDATE()),
-        CONSTRAINT [PK_PersonProfiles] PRIMARY KEY ([Id])
-    );
-END
-ELSE
-BEGIN
-    IF COL_LENGTH('dbo.PersonProfiles', 'ProfileImageBase64') IS NULL
-    BEGIN
-        ALTER TABLE [dbo].[PersonProfiles] ADD [ProfileImageBase64] nvarchar(max) NULL;
-    END
-END
+//IF OBJECT_ID(N'[dbo].[PersonProfiles]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[PersonProfiles](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [Name] nvarchar(150) NOT NULL,
+//        [Role] nvarchar(30) NOT NULL,
+//        [Qualification] nvarchar(200) NULL,
+//        [ExperienceYears] int NOT NULL,
+//        [Achievements] nvarchar(2000) NULL,
+//        [Bio] nvarchar(2000) NULL,
+//        [ProfileImageBase64] nvarchar(max) NULL,
+//        [IsActive] bit NOT NULL CONSTRAINT [DF_PersonProfiles_IsActive] DEFAULT(1),
+//        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_PersonProfiles_CreatedAt] DEFAULT(GETUTCDATE()),
+//        CONSTRAINT [PK_PersonProfiles] PRIMARY KEY ([Id])
+//    );
+//END
+//ELSE
+//BEGIN
+//    IF COL_LENGTH('dbo.PersonProfiles', 'ProfileImageBase64') IS NULL
+//    BEGIN
+//        ALTER TABLE [dbo].[PersonProfiles] ADD [ProfileImageBase64] nvarchar(max) NULL;
+//    END
+//END
 
-IF OBJECT_ID(N'[dbo].[Reviews]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[Reviews](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [ClientName] nvarchar(150) NOT NULL,
-        [Rating] int NOT NULL,
-        [ReviewText] nvarchar(2000) NOT NULL,
-        [ClientImageBase64] nvarchar(max) NULL,
-        [IsApproved] bit NOT NULL CONSTRAINT [DF_Reviews_IsApproved] DEFAULT(0),
-        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_Reviews_CreatedAt] DEFAULT(GETUTCDATE()),
-        CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id])
-    );
-END
-ELSE
-BEGIN
-    IF COL_LENGTH('dbo.Reviews', 'ClientImageBase64') IS NULL
-    BEGIN
-        ALTER TABLE [dbo].[Reviews] ADD [ClientImageBase64] nvarchar(max) NULL;
-    END
-END
+//IF OBJECT_ID(N'[dbo].[Reviews]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[Reviews](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [ClientName] nvarchar(150) NOT NULL,
+//        [Rating] int NOT NULL,
+//        [ReviewText] nvarchar(2000) NOT NULL,
+//        [ClientImageBase64] nvarchar(max) NULL,
+//        [IsApproved] bit NOT NULL CONSTRAINT [DF_Reviews_IsApproved] DEFAULT(0),
+//        [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_Reviews_CreatedAt] DEFAULT(GETUTCDATE()),
+//        CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id])
+//    );
+//END
+//ELSE
+//BEGIN
+//    IF COL_LENGTH('dbo.Reviews', 'ClientImageBase64') IS NULL
+//    BEGIN
+//        ALTER TABLE [dbo].[Reviews] ADD [ClientImageBase64] nvarchar(max) NULL;
+//    END
+//END
 
-IF OBJECT_ID(N'[dbo].[Glasses]', N'U') IS NOT NULL
-BEGIN
-    IF COL_LENGTH('dbo.Glasses', 'ImageBase64') IS NULL
-    BEGIN
-        ALTER TABLE [dbo].[Glasses] ADD [ImageBase64] nvarchar(max) NULL;
-    END
-END
+//IF OBJECT_ID(N'[dbo].[Glasses]', N'U') IS NOT NULL
+//BEGIN
+//    IF COL_LENGTH('dbo.Glasses', 'ImageBase64') IS NULL
+//    BEGIN
+//        ALTER TABLE [dbo].[Glasses] ADD [ImageBase64] nvarchar(max) NULL;
+//    END
+//END
 
-IF OBJECT_ID(N'[dbo].[Orders]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[Orders](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [UserId] nvarchar(450) NULL,
-        [Name] nvarchar(120) NOT NULL,
-        [Phone] nvarchar(30) NOT NULL,
-        [Email] nvarchar(150) NOT NULL,
-        [Address] nvarchar(500) NOT NULL,
-        [TotalAmount] decimal(18,2) NOT NULL,
-        [Status] nvarchar(20) NOT NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        CONSTRAINT [PK_Orders] PRIMARY KEY ([Id])
-    );
-END
+//IF OBJECT_ID(N'[dbo].[Orders]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[Orders](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [UserId] nvarchar(450) NULL,
+//        [Name] nvarchar(120) NOT NULL,
+//        [Phone] nvarchar(30) NOT NULL,
+//        [Email] nvarchar(150) NOT NULL,
+//        [Address] nvarchar(500) NOT NULL,
+//        [TotalAmount] decimal(18,2) NOT NULL,
+//        [Status] nvarchar(20) NOT NULL,
+//        [CreatedAt] datetime2 NOT NULL,
+//        CONSTRAINT [PK_Orders] PRIMARY KEY ([Id])
+//    );
+//END
 
-IF COL_LENGTH('dbo.Orders', 'PaymentMethod') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Orders] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentMethod] DEFAULT('CashOnDelivery');
-END
+//IF COL_LENGTH('dbo.Orders', 'PaymentMethod') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Orders] ADD [PaymentMethod] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentMethod] DEFAULT('CashOnDelivery');
+//END
 
-IF COL_LENGTH('dbo.Orders', 'PaymentStatus') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Orders] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentStatus] DEFAULT('Pending');
-END
+//IF COL_LENGTH('dbo.Orders', 'PaymentStatus') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Orders] ADD [PaymentStatus] nvarchar(30) NOT NULL CONSTRAINT [DF_Orders_PaymentStatus] DEFAULT('Pending');
+//END
 
-IF COL_LENGTH('dbo.Orders', 'PaymentId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Orders] ADD [PaymentId] nvarchar(200) NULL;
-END
+//IF COL_LENGTH('dbo.Orders', 'PaymentId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Orders] ADD [PaymentId] nvarchar(200) NULL;
+//END
 
-IF COL_LENGTH('dbo.Orders', 'RazorpayOrderId') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Orders] ADD [RazorpayOrderId] nvarchar(200) NULL;
-END
+//IF COL_LENGTH('dbo.Orders', 'RazorpayOrderId') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[Orders] ADD [RazorpayOrderId] nvarchar(200) NULL;
+//END
 
-IF OBJECT_ID(N'[dbo].[OrderItems]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[OrderItems](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [OrderId] INT NOT NULL,
-        [GlassId] INT NOT NULL,
-        [Quantity] INT NOT NULL,
-        [Price] decimal(18,2) NOT NULL,
-        CONSTRAINT [PK_OrderItems] PRIMARY KEY ([Id])
-    );
-END
+//IF OBJECT_ID(N'[dbo].[OrderItems]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[OrderItems](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [OrderId] INT NOT NULL,
+//        [GlassId] INT NOT NULL,
+//        [Quantity] INT NOT NULL,
+//        [Price] decimal(18,2) NOT NULL,
+//        CONSTRAINT [PK_OrderItems] PRIMARY KEY ([Id])
+//    );
+//END
 
-IF OBJECT_ID(N'[dbo].[CartItems]', N'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[CartItems](
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [GlassId] INT NOT NULL,
-        [UserId] nvarchar(450) NULL,
-        [Quantity] INT NOT NULL,
-        [CreatedAtUtc] datetime2 NOT NULL,
-        CONSTRAINT [PK_CartItems] PRIMARY KEY ([Id])
-    );
-END
+//IF OBJECT_ID(N'[dbo].[CartItems]', N'U') IS NULL
+//BEGIN
+//    CREATE TABLE [dbo].[CartItems](
+//        [Id] INT IDENTITY(1,1) NOT NULL,
+//        [GlassId] INT NOT NULL,
+//        [UserId] nvarchar(450) NULL,
+//        [Quantity] INT NOT NULL,
+//        [CreatedAtUtc] datetime2 NOT NULL,
+//        CONSTRAINT [PK_CartItems] PRIMARY KEY ([Id])
+//    );
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'RightEyeSph') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [RightEyeSph] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'RightEyeSph') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [RightEyeSph] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'RightEyeCyl') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [RightEyeCyl] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'RightEyeCyl') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [RightEyeCyl] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'RightEyeAxis') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [RightEyeAxis] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'RightEyeAxis') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [RightEyeAxis] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'LeftEyeSph') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeSph] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'LeftEyeSph') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeSph] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'LeftEyeCyl') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeCyl] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'LeftEyeCyl') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeCyl] nvarchar(120) NULL;
+//END
 
-IF COL_LENGTH('dbo.CartItems', 'LeftEyeAxis') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeAxis] nvarchar(120) NULL;
-END
+//IF COL_LENGTH('dbo.CartItems', 'LeftEyeAxis') IS NULL
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] ADD [LeftEyeAxis] nvarchar(120) NULL;
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_UserId' AND object_id = OBJECT_ID(N'[dbo].[Orders]')
-)
-BEGIN
-    CREATE INDEX [IX_Orders_UserId] ON [dbo].[Orders]([UserId]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_Orders_UserId' AND object_id = OBJECT_ID(N'[dbo].[Orders]')
+//)
+//BEGIN
+//    CREATE INDEX [IX_Orders_UserId] ON [dbo].[Orders]([UserId]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_OrderItems_OrderId' AND object_id = OBJECT_ID(N'[dbo].[OrderItems]')
-)
-BEGIN
-    CREATE INDEX [IX_OrderItems_OrderId] ON [dbo].[OrderItems]([OrderId]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_OrderItems_OrderId' AND object_id = OBJECT_ID(N'[dbo].[OrderItems]')
+//)
+//BEGIN
+//    CREATE INDEX [IX_OrderItems_OrderId] ON [dbo].[OrderItems]([OrderId]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_OrderItems_GlassId' AND object_id = OBJECT_ID(N'[dbo].[OrderItems]')
-)
-BEGIN
-    CREATE INDEX [IX_OrderItems_GlassId] ON [dbo].[OrderItems]([GlassId]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_OrderItems_GlassId' AND object_id = OBJECT_ID(N'[dbo].[OrderItems]')
+//)
+//BEGIN
+//    CREATE INDEX [IX_OrderItems_GlassId] ON [dbo].[OrderItems]([GlassId]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_CartItems_GlassId' AND object_id = OBJECT_ID(N'[dbo].[CartItems]')
-)
-BEGIN
-    CREATE INDEX [IX_CartItems_GlassId] ON [dbo].[CartItems]([GlassId]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_CartItems_GlassId' AND object_id = OBJECT_ID(N'[dbo].[CartItems]')
+//)
+//BEGIN
+//    CREATE INDEX [IX_CartItems_GlassId] ON [dbo].[CartItems]([GlassId]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes WHERE name = N'IX_CartItems_UserId_GlassId' AND object_id = OBJECT_ID(N'[dbo].[CartItems]')
-)
-BEGIN
-    CREATE UNIQUE INDEX [IX_CartItems_UserId_GlassId] ON [dbo].[CartItems]([UserId], [GlassId]) WHERE [UserId] IS NOT NULL;
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.indexes WHERE name = N'IX_CartItems_UserId_GlassId' AND object_id = OBJECT_ID(N'[dbo].[CartItems]')
+//)
+//BEGIN
+//    CREATE UNIQUE INDEX [IX_CartItems_UserId_GlassId] ON [dbo].[CartItems]([UserId], [GlassId]) WHERE [UserId] IS NOT NULL;
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_Orders_AspNetUsers_UserId'
-)
-BEGIN
-    ALTER TABLE [dbo].[Orders] WITH NOCHECK
-    ADD CONSTRAINT [FK_Orders_AspNetUsers_UserId]
-        FOREIGN KEY([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]);
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_Orders_AspNetUsers_UserId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[Orders] WITH NOCHECK
+//    ADD CONSTRAINT [FK_Orders_AspNetUsers_UserId]
+//        FOREIGN KEY([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]);
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_OrderItems_Orders_OrderId'
-)
-BEGIN
-    ALTER TABLE [dbo].[OrderItems] WITH NOCHECK
-    ADD CONSTRAINT [FK_OrderItems_Orders_OrderId]
-        FOREIGN KEY([OrderId]) REFERENCES [dbo].[Orders]([Id]) ON DELETE CASCADE;
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_OrderItems_Orders_OrderId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[OrderItems] WITH NOCHECK
+//    ADD CONSTRAINT [FK_OrderItems_Orders_OrderId]
+//        FOREIGN KEY([OrderId]) REFERENCES [dbo].[Orders]([Id]) ON DELETE CASCADE;
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_OrderItems_Glasses_GlassId'
-)
-BEGIN
-    ALTER TABLE [dbo].[OrderItems] WITH NOCHECK
-    ADD CONSTRAINT [FK_OrderItems_Glasses_GlassId]
-        FOREIGN KEY([GlassId]) REFERENCES [dbo].[Glasses]([Id]) ON DELETE NO ACTION;
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_OrderItems_Glasses_GlassId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[OrderItems] WITH NOCHECK
+//    ADD CONSTRAINT [FK_OrderItems_Glasses_GlassId]
+//        FOREIGN KEY([GlassId]) REFERENCES [dbo].[Glasses]([Id]) ON DELETE NO ACTION;
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CartItems_Glasses_GlassId'
-)
-BEGIN
-    ALTER TABLE [dbo].[CartItems] WITH NOCHECK
-    ADD CONSTRAINT [FK_CartItems_Glasses_GlassId]
-        FOREIGN KEY([GlassId]) REFERENCES [dbo].[Glasses]([Id]) ON DELETE CASCADE;
-END
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CartItems_Glasses_GlassId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] WITH NOCHECK
+//    ADD CONSTRAINT [FK_CartItems_Glasses_GlassId]
+//        FOREIGN KEY([GlassId]) REFERENCES [dbo].[Glasses]([Id]) ON DELETE CASCADE;
+//END
 
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CartItems_AspNetUsers_UserId'
-)
-BEGIN
-    ALTER TABLE [dbo].[CartItems] WITH NOCHECK
-    ADD CONSTRAINT [FK_CartItems_AspNetUsers_UserId]
-        FOREIGN KEY([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE CASCADE;
-END
-");
-        }
+//IF NOT EXISTS (
+//    SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CartItems_AspNetUsers_UserId'
+//)
+//BEGIN
+//    ALTER TABLE [dbo].[CartItems] WITH NOCHECK
+//    ADD CONSTRAINT [FK_CartItems_AspNetUsers_UserId]
+//        FOREIGN KEY([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE CASCADE;
+//END
+//");
+//        }
 
         private static bool IsStrongBootstrapPassword(string password)
         {
