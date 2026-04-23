@@ -103,6 +103,10 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("AssignedDoctorId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int?>("Age")
                         .HasColumnType("int");
 
@@ -135,9 +139,27 @@ namespace EyeClinicApp.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)");
 
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("ReasonForVisit")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RazorpayOrderId")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RazorpayPaymentId")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -163,6 +185,8 @@ namespace EyeClinicApp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ModifiedByAdminId");
+
+                    b.HasIndex("AssignedDoctorId");
 
                     b.HasIndex("TimeSlotId");
 
@@ -191,8 +215,32 @@ namespace EyeClinicApp.Migrations
                     b.Property<int>("GlassId")
                         .HasColumnType("int");
 
+                    b.Property<string>("LeftEyeAxis")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LeftEyeCyl")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LeftEyeSph")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("RightEyeAxis")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RightEyeCyl")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RightEyeSph")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
@@ -394,6 +442,72 @@ namespace EyeClinicApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PersonProfiles");
+                });
+
+            modelBuilder.Entity("EyeClinicApp.Models.Prescription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FileContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LeftEyeAxis")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LeftEyeCyl")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LeftEyeSph")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("RightEyeAxis")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RightEyeCyl")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RightEyeSph")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("Prescriptions");
                 });
 
             modelBuilder.Entity("EyeClinicApp.Models.Review", b =>
@@ -645,6 +759,11 @@ namespace EyeClinicApp.Migrations
 
             modelBuilder.Entity("EyeClinicApp.Models.Appointment", b =>
                 {
+                    b.HasOne("EyeClinicApp.Models.ApplicationUser", "AssignedDoctor")
+                        .WithMany()
+                        .HasForeignKey("AssignedDoctorId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("EyeClinicApp.Models.ApplicationUser", "ModifiedByAdmin")
                         .WithMany()
                         .HasForeignKey("ModifiedByAdminId")
@@ -661,16 +780,15 @@ namespace EyeClinicApp.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EyeClinicApp.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.Navigation("AssignedDoctor");
 
                     b.Navigation("ModifiedByAdmin");
 
                     b.Navigation("TimeSlot");
 
                     b.Navigation("User");
+
+                    b.Navigation("Prescription");
                 });
 
             modelBuilder.Entity("EyeClinicApp.Models.CartItem", b =>
@@ -698,6 +816,25 @@ namespace EyeClinicApp.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EyeClinicApp.Models.Prescription", b =>
+                {
+                    b.HasOne("EyeClinicApp.Models.Appointment", "Appointment")
+                        .WithOne("Prescription")
+                        .HasForeignKey("EyeClinicApp.Models.Prescription", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EyeClinicApp.Models.ApplicationUser", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("EyeClinicApp.Models.OrderItem", b =>
