@@ -23,7 +23,6 @@ namespace EyeClinicApp.Data.Seed
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
             await context.Database.MigrateAsync();
-            //await EnsureSchemaCompatibilityAsync(context);
 
             foreach (var role in RequiredRoles)
             {
